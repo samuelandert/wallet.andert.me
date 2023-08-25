@@ -18,7 +18,7 @@ export async function fetchSchemas() {
   // Fetch the GraphQL SDL schema
   const { data: schema } = await axios.get(`${serverUrl}/server/specs/graphql`, {
     headers: {
-      'Authorization': `Bearer ${process.env.DIRECTUS_API}`
+      'Authorization': process.env.DIRECTUS
     }
   });
 

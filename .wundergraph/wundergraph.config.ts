@@ -3,6 +3,8 @@ import server from './wundergraph.server';
 import operations from './wundergraph.operations';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const directusSchema = fs.readFileSync(path.join(path.resolve(), './schemas/directus.graphql'), 'utf8');
 
@@ -21,7 +23,7 @@ const directus = introspect.graphql({
 	loadSchemaFromString: directusSchema,
 	url: 'https://directus.andert.me/graphql',
 	headers: (builder) => builder
-		.addStaticHeader('Authorization', 'Bearer Bv5RknRvv5AZouxcYdBJgVOe3ZC493Y3')
+		.addStaticHeader('Authorization', new EnvironmentVariable('DIRECTUS', process.env.DIRECTUS))
 });
 
 // configureWunderGraph emits the configuration
@@ -53,4 +55,5 @@ configureWunderGraphApplication({
 	security: {
 		enableGraphQLEndpoint: process.env.NODE_ENV !== 'production' || process.env.GITPOD_WORKSPACE_ID !== undefined,
 	},
+
 });
