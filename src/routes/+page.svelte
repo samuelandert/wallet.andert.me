@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createQuery } from "../lib/wundergraph";
   import Login from "$lib/Login.svelte";
+  import User from "$lib/User.svelte";
 
   const projectsQuery = createQuery({
     operationName: "Projects",
@@ -8,6 +9,8 @@
 </script>
 
 <Login />
+<User />
+
 <br />
 Projects
 <div class="results">

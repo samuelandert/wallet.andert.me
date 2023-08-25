@@ -55,5 +55,13 @@ configureWunderGraphApplication({
 	security: {
 		enableGraphQLEndpoint: process.env.NODE_ENV !== 'production' || process.env.GITPOD_WORKSPACE_ID !== undefined,
 	},
-
+	authentication: {
+		tokenBased: {
+			providers: [
+				{
+					userInfoEndpoint: 'http://localhost:3000/api/auth/session',
+				},
+			],
+		},
+	},
 });
