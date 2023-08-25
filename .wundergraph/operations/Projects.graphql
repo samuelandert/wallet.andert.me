@@ -1,0 +1,6 @@
+query Projects {
+  directus_projects {
+    id
+    text
+  }
+}
