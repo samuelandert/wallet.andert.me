@@ -1,6 +1,10 @@
-query Projects {
+query Todos {
   directus_todos {
     id
     task
+    user_created {
+      first_name
+      last_name
+    }
   }
 }

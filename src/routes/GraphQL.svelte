@@ -1,9 +1,9 @@
 <script lang="ts">
   import { createQuery } from "../lib/wundergraph";
 
-  const dragonsQuery = createQuery({
-    operationName: "Dragons",
-  });
+  //   const dragonsQuery = createQuery({
+  //     operationName: "Dragons",
+  //   });
   const projectsQuery = createQuery({
     operationName: "Projects",
   });
@@ -12,7 +12,7 @@
   });
 </script>
 
-Dragons
+<!-- Dragons
 <div class="results">
   {#if $dragonsQuery.isLoading}
     <p>Loading...</p>
@@ -21,7 +21,7 @@ Dragons
   {:else}
     <pre>{JSON.stringify($dragonsQuery.data, null, 2)}</pre>
   {/if}
-</div>
+</div> -->
 
 Projects
 <div class="results">
@@ -34,7 +34,7 @@ Projects
   {/if}
 </div>
 
-Tasks
+Todos
 <div class="results">
   {#if $todosQuery.isLoading}
     <p>Loading...</p>

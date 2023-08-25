@@ -20,7 +20,8 @@ const directus = introspect.graphql({
 	apiNamespace: 'directus',
 	loadSchemaFromString: directusSchema,
 	url: 'https://directus.andert.me/graphql',
-	headers: (builder) => builder.addStaticHeader('Authorization', 'Bearer Bv5RknRvv5AZouxcYdBJgVOe3ZC493Y3')
+	headers: (builder) => builder
+		.addStaticHeader('Authorization', 'Bearer Bv5RknRvv5AZouxcYdBJgVOe3ZC493Y3')
 });
 
 // configureWunderGraph emits the configuration
