@@ -21,6 +21,7 @@
 
 {#if user}
   <p>Welcome, {user.name}!</p>
+  <p>Your roles: {user.roles.join(", ")}</p>
 {:else}
   <p>Loading...</p>
 {/if}

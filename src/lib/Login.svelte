@@ -1,5 +1,6 @@
 <script>
   import Cookies from "js-cookie";
+
   async function login() {
     const response = await fetch("/api/auth", { method: "POST" });
     if (!response.ok) {
@@ -8,6 +9,7 @@
       let { token } = await response.json();
       Cookies.set("token", token);
       alert(`Login Success: ${token}`);
+      console.log(token);
     }
   }
 </script>

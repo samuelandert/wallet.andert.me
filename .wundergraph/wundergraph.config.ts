@@ -64,4 +64,7 @@ configureWunderGraphApplication({
 			],
 		},
 	},
+	authorization: {
+		roles: ['admin'],
+	},
 });

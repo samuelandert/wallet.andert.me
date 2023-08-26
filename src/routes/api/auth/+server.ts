@@ -5,7 +5,7 @@ import { error } from '@sveltejs/kit';
 const secretKey = 'mysecrettestkey';
 
 export async function POST() {
-  const token = jwt.sign({ name: 'Samuel', loggedIn: true }, secretKey);
+  const token = jwt.sign({ name: 'Samuel', loggedIn: true, roles: ['admin'] }, secretKey);
   if (!token) {
     throw error(400, 'No token created.');
   }

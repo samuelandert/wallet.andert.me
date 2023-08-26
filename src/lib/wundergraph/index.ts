@@ -7,4 +7,4 @@ const client = createClient();
 const { createFileUpload, createMutation, createQuery, createSubscription, getAuth, getUser, queryKey, prefetchQuery } =
 	createSvelteClient<Operations>(client);
 
-export { createFileUpload, createMutation, createQuery, createSubscription, getAuth, getUser, queryKey, prefetchQuery };
+export { createFileUpload, createMutation, createQuery, createSubscription, getAuth, getUser, queryKey, prefetchQuery, client };
