@@ -12,16 +12,35 @@
 
   const redirectUri = "http://localhost:3000/";
 
-  let sessionSigs, error, currentPKP, authMethod, provider;
-  let messageToSign = { user: "Sam", loggedIn: true, signature: "" };
+  let sessionSigs = null;
+  let litNodeClient, error, currentPKP, authMethod, provider;
+  let messageToSign = { user: "Sam", loggedIn: true };
   let status = "Initializing...";
   let jsonObjectToVerify = null;
   let pkps: IRelayPKP[] = [];
   let view = "SIGN_IN";
+  let sessionSigsObject;
 
-  onMount(() => {
-    initialize();
+  onMount(async () => {
+    litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
+    await litNodeClient.connect();
+    const sessionSigsLocalStorage = localStorage.getItem("google-signature");
+    const currentPKPLocalStorage = localStorage.getItem("current-pkp");
+    if (sessionSigsLocalStorage && currentPKPLocalStorage) {
+      sessionSigs = JSON.parse(sessionSigsLocalStorage);
+      currentPKP = JSON.parse(currentPKPLocalStorage);
+    } else {
+      initialize();
+    }
+
+    if (sessionSigsLocalStorage) {
+      sessionSigsObject = JSON.parse(sessionSigsLocalStorage);
+    }
   });
+
+  $: if (sessionSigs) {
+    view = "READY";
+  }
 
   async function initialize() {
     status = "Connecting to Google provider...";
@@ -46,7 +65,7 @@
         status = "Reconnected to Google provider.";
       }
       await provider.signIn();
-      status = "Signed in with Google.";
+      status = "Signing in with Google...";
     } catch (err) {
       setError(err);
     }
@@ -58,13 +77,13 @@
       authMethod = await provider.authenticate();
       status = "Authenticated successfully.";
       pkps = await provider.fetchPKPsThroughRelayer(authMethod);
-      status = "Fetched PKPs.";
+      status = "Fetching your Google PKP...";
       if (pkps.length === 0) {
-        status = "No PKPs found. Minting...";
+        status = "No PKPs found. Minting new PKP...";
         await mint();
       } else {
-        // Update the view to 'PKP' to show the available PKPs
-        view = "PKP";
+        // Use the first PKP directly
+        await createSession(pkps[0]);
       }
     } catch (err) {
       setError(err);
@@ -81,9 +100,13 @@
   async function createSession(pkp: IRelayPKP) {
     try {
       currentPKP = pkp; // Assign the selected PKP to currentPKP
-      sessionSigs = await createLitSession(provider, pkp.publicKey, authMethod);
+      createLitSession(provider, pkp.publicKey, authMethod).then((sigs) => {
+        sessionSigs = sigs;
+        // Store sessionSigs and currentPKP in localStorage
+        localStorage.setItem("google-signature", JSON.stringify(sessionSigs));
+        localStorage.setItem("current-pkp", JSON.stringify(currentPKP));
+      });
       status = "Session created successfully.";
-      view = "READY";
     } catch (err) {
       setError(err);
     }
@@ -104,11 +127,11 @@
       const toSign = ethers.getBytes(ethers.hashMessage(jsonString));
 
       const litActionCode = `
-				  const go = async () => {
-					  const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });
-				  };
-				  go();
-				  `;
+					const go = async () => {
+						const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });
+					};
+					go();
+					`;
 
       // Sign message
       const results = await litNodeClient.executeJs({
@@ -133,10 +156,6 @@
       messageToSign.signature = signature;
 
       jsonObjectToVerify = { ...messageToSign };
-
-      console.log(
-        "JSON object to sign: " + JSON.stringify(jsonObjectToVerify, null, 2)
-      );
 
       // Display the signed JSON
       status = JSON.stringify(messageToSign, null, 2);
@@ -173,21 +192,9 @@
         <span>Sign in with Google</span>
       </button>
     {/if}
-    {#if view === "PKP"}
-      <div>
-        <h1>Select a PKP</h1>
-        <ul>
-          {#each pkps as pkp (pkp.publicKey)}
-            <li>
-              <button on:click={() => createSession(pkp)}>Use this PKP</button>
-              <pre>{JSON.stringify(pkp, null, 2)}</pre>
-            </li>
-          {/each}
-        </ul>
-      </div>
-    {/if}
     {#if view === "READY"}
       <div>
+        <h3>Your PKP Address: {currentPKP.ethAddress}</h3>
         <h1>Ready to sign</h1>
         <button on:click={signMessageWithPKP}>Sign Message</button>
         {#if messageToSign}
@@ -199,5 +206,45 @@
       <h1>Status</h1>
       <p>{status}</p>
     </div>
+    <div class="mt-4 text-center">
+      Session Signature
+      {#if sessionSigsObject}
+        <div class="mt-4 text-center">
+          <h1>Session Signatures</h1>
+          {#each Object.keys(sessionSigsObject) as nodeAddress}
+            <div class="session-sig">
+              <h2>{nodeAddress}</h2>
+              <p>Signature: {sessionSigsObject[nodeAddress].sig}</p>
+              <p>Derived Via: {sessionSigsObject[nodeAddress].derivedVia}</p>
+              <p>Address: {sessionSigsObject[nodeAddress].address}</p>
+              <p>Algorithm: {sessionSigsObject[nodeAddress].algo}</p>
+              <h3>Signed Message</h3>
+              <pre>{sessionSigsObject[nodeAddress].signedMessage}</pre>
+            </div>
+          {/each}
+        </div>
+      {/if}
+    </div>
   </div>
 </div>
+
+<style>
+  .container {
+    /* ...existing styles... */
+  }
+
+  .session-sig {
+    border: 1px solid #ddd;
+    padding: 1em;
+    margin-bottom: 1em;
+  }
+
+  .session-sig h2 {
+    color: #333;
+  }
+
+  .session-sig p,
+  .session-sig pre {
+    color: #666;
+  }
+</style>
