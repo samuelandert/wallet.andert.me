@@ -9,6 +9,7 @@
   import { createLitSession } from "./createLitSession";
   import { connectProvider } from "./setupLit";
   import { ethers } from "ethers";
+  import Signer from "./Signer.svelte";
 
   const redirectUri = "http://localhost:3000/";
 
@@ -194,12 +195,16 @@
     {/if}
     {#if view === "READY"}
       <div>
-        <h3>Your PKP Address: {currentPKP.ethAddress}</h3>
+        <h3>Your PKP Address:</h3>
+        <p>{currentPKP.ethAddress}</p>
         <h1>Ready to sign</h1>
-        <button on:click={signMessageWithPKP}>Sign Message</button>
-        {#if messageToSign}
-          <pre>{JSON.stringify(messageToSign)}</pre>
-        {/if}
+        <Signer
+          {litNodeClient}
+          {currentPKP}
+          {sessionSigs}
+          on:status={(e) => (status = e.detail)}
+          on:error={(e) => setError(e.detail)}
+        />
       </div>
     {/if}
     <div class="mt-4 text-center">
