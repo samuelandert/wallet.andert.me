@@ -6,6 +6,14 @@
 		<meta name="viewport" content="width=device-width" />
 		%sveltekit.head%
 	</head>
+	<script>
+		global = window;
+		window.process = {
+			env: {
+				NODE_ENV: 'development'
+			}
+		}	
+	</script>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>

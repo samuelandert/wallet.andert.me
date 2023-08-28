@@ -8,7 +8,6 @@
 
   const token = Cookies.get("token");
 
-  // Set the Authorization header token
   if (token) {
     client.setAuthorizationToken(token);
   }
