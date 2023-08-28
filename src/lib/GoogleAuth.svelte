@@ -8,23 +8,19 @@
   import Icon from "@iconify/svelte";
   import { createLitSession } from "./createLitSession";
   import { connectProvider } from "./setupLit";
-  import { ethers } from "ethers";
-  import Signer from "./Signer.svelte";
 
   const redirectUri = "http://localhost:3000/";
 
   let sessionSigs = null;
   let litNodeClient, error, currentPKP, authMethod, provider;
-  let messageToSign = { user: "Sam", loggedIn: true };
   let status = "Initializing...";
-  let jsonObjectToVerify = null;
   let pkps: IRelayPKP[] = [];
   let view = "SIGN_IN";
   let sessionSigsObject;
 
   onMount(async () => {
-    litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
-    await litNodeClient.connect();
+    // litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
+    // await litNodeClient.connect();
     const sessionSigsLocalStorage = localStorage.getItem("google-signature");
     const currentPKPLocalStorage = localStorage.getItem("current-pkp");
     if (sessionSigsLocalStorage && currentPKPLocalStorage) {
@@ -33,7 +29,6 @@
     } else {
       initialize();
     }
-
     if (sessionSigsLocalStorage) {
       sessionSigsObject = JSON.parse(sessionSigsLocalStorage);
     }
@@ -118,66 +113,6 @@
     view = "ERROR";
     status = `Error: ${err.message}`;
   }
-
-  async function signMessageWithPKP() {
-    try {
-      // Create a specific JSON object
-      const jsonString = JSON.stringify(messageToSign);
-
-      // Convert the JSON string to an array of character codes
-      const toSign = ethers.getBytes(ethers.hashMessage(jsonString));
-
-      const litActionCode = `
-					const go = async () => {
-						const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });
-					};
-					go();
-					`;
-
-      // Sign message
-      const results = await litNodeClient.executeJs({
-        code: litActionCode,
-        sessionSigs: sessionSigs,
-        jsParams: {
-          toSign: toSign,
-          publicKey: currentPKP.publicKey,
-          sigName: "sig1",
-        },
-      });
-
-      // Get signature
-      const result = results.signatures["sig1"];
-      const signature = ethers.Signature.from({
-        r: "0x" + result.r,
-        s: "0x" + result.s,
-        v: result.recid,
-      });
-
-      // Add the signature to the JSON object
-      messageToSign.signature = signature;
-
-      jsonObjectToVerify = { ...messageToSign };
-
-      // Display the signed JSON
-      status = JSON.stringify(messageToSign, null, 2);
-
-      // Verify the signature
-      const recoveredAddr = ethers.verifyMessage(jsonString, signature);
-
-      // Check if the address associated with the signature is the same as the current PKP
-      const verified =
-        currentPKP.ethAddress.toLowerCase() === recoveredAddr.toLowerCase();
-
-      if (verified) {
-        status = "The signature is valid.";
-      } else {
-        status = "The signature is invalid.";
-      }
-    } catch (err) {
-      console.error(err);
-      setError(err);
-    }
-  }
 </script>
 
 <div class="flex items-center justify-center h-screen">
@@ -197,21 +132,13 @@
       <div>
         <h3>Your PKP Address:</h3>
         <p>{currentPKP.ethAddress}</p>
-        <h1>Ready to sign</h1>
-        <Signer
-          {litNodeClient}
-          {currentPKP}
-          {sessionSigs}
-          on:status={(e) => (status = e.detail)}
-          on:error={(e) => setError(e.detail)}
-        />
       </div>
     {/if}
     <div class="mt-4 text-center">
       <h1>Status</h1>
       <p>{status}</p>
     </div>
-    <div class="mt-4 text-center">
+    <!-- <div class="mt-4 text-center">
       Session Signature
       {#if sessionSigsObject}
         <div class="mt-4 text-center">
@@ -229,27 +156,6 @@
           {/each}
         </div>
       {/if}
-    </div>
+    </div> -->
   </div>
 </div>
-
-<style>
-  .container {
-    /* ...existing styles... */
-  }
-
-  .session-sig {
-    border: 1px solid #ddd;
-    padding: 1em;
-    margin-bottom: 1em;
-  }
-
-  .session-sig h2 {
-    color: #333;
-  }
-
-  .session-sig p,
-  .session-sig pre {
-    color: #666;
-  }
-</style>

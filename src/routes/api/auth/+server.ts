@@ -1,4 +1,3 @@
-// src/routes/api/auth/+server.ts
 import jwt from 'jsonwebtoken';
 import { error } from '@sveltejs/kit';
 

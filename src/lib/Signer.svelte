@@ -1,19 +1,29 @@
 <!-- SignVerifyMessage.svelte -->
 <script lang="ts">
   import { ethers } from "ethers";
-  import { createEventDispatcher } from "svelte";
+  import { onMount } from "svelte";
 
-  export let litNodeClient;
-  export let currentPKP;
-  export let sessionSigs;
-  export let messageToSign = { user: "Sam", loggedIn: true };
+  export let messageToSign = {};
 
+  let currentPKP;
+  let sessionSigs;
   let status = "";
-  let jsonObjectToVerify = null;
+  let litNodeClient;
+  let messageSignature;
 
-  const dispatch = createEventDispatcher();
+  onMount(async () => {
+    litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
+    await litNodeClient.connect();
 
-  async function signMessageWithPKP() {
+    const sessionSigsLocalStorage = localStorage.getItem("google-signature");
+    const currentPKPLocalStorage = localStorage.getItem("current-pkp");
+    if (sessionSigsLocalStorage && currentPKPLocalStorage) {
+      sessionSigs = JSON.parse(sessionSigsLocalStorage);
+      currentPKP = JSON.parse(currentPKPLocalStorage);
+    }
+  });
+
+  export async function signMessageWithPKP() {
     const userConfirmed = window.confirm(
       "Do you want to sign the following message?\n\n" +
         JSON.stringify(messageToSign, null, 2)
@@ -32,11 +42,11 @@
       const toSign = ethers.getBytes(ethers.hashMessage(jsonString));
 
       const litActionCode = `
-          const go = async () => {
-            const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });
-          };
-          go();
-        `;
+        const go = async () => {
+          const sigShare = await LitActions.signEcdsa({ toSign, publicKey, sigName });
+        };
+        go();
+      `;
 
       // Sign message
       const results = await litNodeClient.executeJs({
@@ -51,22 +61,17 @@
 
       // Get signature
       const result = results.signatures["sig1"];
-      const signature = ethers.Signature.from({
+      messageSignature = ethers.Signature.from({
         r: "0x" + result.r,
         s: "0x" + result.s,
         v: result.recid,
       });
 
-      // Add the signature to the JSON object
-      messageToSign.signature = signature;
-
-      jsonObjectToVerify = { ...messageToSign };
-
       // Display the signed JSON
       status = JSON.stringify(messageToSign, null, 2);
 
       // Verify the signature
-      const recoveredAddr = ethers.verifyMessage(jsonString, signature);
+      const recoveredAddr = ethers.verifyMessage(jsonString, messageSignature);
 
       // Check if the address associated with the signature is the same as the current PKP
       const verified =
@@ -77,11 +82,8 @@
       } else {
         status = "The signature is invalid.";
       }
-
-      dispatch("status", status);
     } catch (err) {
       console.error(err);
-      dispatch("error", err);
     }
   }
 </script>
@@ -89,4 +91,16 @@
 <button on:click={signMessageWithPKP}>Sign Message</button>
 {#if messageToSign}
   <pre>{JSON.stringify(messageToSign)}</pre>
+{/if}
+
+{#if status}
+  <div class="mt-4 text-center">
+    <p>Status: {status}</p>
+  </div>
+{/if}
+{#if messageSignature}
+  <div class="mt-4 text-center">
+    <h3>Signature</h3>
+    <pre>{JSON.stringify(messageSignature)}</pre>
+  </div>
 {/if}
