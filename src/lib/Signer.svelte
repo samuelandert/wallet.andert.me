@@ -15,7 +15,7 @@
     litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
     await litNodeClient.connect();
 
-    const sessionSigsLocalStorage = localStorage.getItem("google-signature");
+    const sessionSigsLocalStorage = localStorage.getItem("google-session");
     const currentPKPLocalStorage = localStorage.getItem("current-pkp");
     if (sessionSigsLocalStorage && currentPKPLocalStorage) {
       sessionSigs = JSON.parse(sessionSigsLocalStorage);

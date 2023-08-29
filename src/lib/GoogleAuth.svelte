@@ -35,6 +35,9 @@
   });
 
   $: if (sessionSigs) {
+    // Store sessionSigs in local storage in its original format
+    localStorage.setItem("google-session", JSON.stringify(sessionSigs));
+
     // Update sessionStatuses
     sessionStatuses = Object.entries(sessionSigs).map(([node, data]) => {
       const sessionKey = JSON.parse(data.signedMessage).sessionKey;
@@ -48,11 +51,8 @@
       };
     });
 
-    // Find an active session and store it in local storage
+    // Find an active session
     activeSession = sessionStatuses.find(({ isExpired }) => !isExpired);
-    if (activeSession) {
-      localStorage.setItem("google-session", JSON.stringify(activeSession));
-    }
 
     view = "READY";
   }
