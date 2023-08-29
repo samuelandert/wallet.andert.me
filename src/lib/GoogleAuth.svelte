@@ -8,33 +8,44 @@
   import Icon from "@iconify/svelte";
   import { createLitSession } from "./createLitSession";
   import { connectProvider } from "./setupLit";
+  import Signer from "./Signer.svelte";
 
   const redirectUri = "http://localhost:3000/";
 
   let sessionSigs = null;
-  let litNodeClient, error, currentPKP, authMethod, provider;
+  let error, currentPKP, authMethod, provider;
   let status = "Initializing...";
   let pkps: IRelayPKP[] = [];
   let view = "SIGN_IN";
-  let sessionSigsObject;
+  let sessionStatuses;
+  let activeSession = null;
+
+  let messageToSign = { user: "Sam", loggedIn: true };
 
   onMount(async () => {
-    // litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
-    // await litNodeClient.connect();
-    const sessionSigsLocalStorage = localStorage.getItem("google-signature");
-    const currentPKPLocalStorage = localStorage.getItem("current-pkp");
-    if (sessionSigsLocalStorage && currentPKPLocalStorage) {
-      sessionSigs = JSON.parse(sessionSigsLocalStorage);
-      currentPKP = JSON.parse(currentPKPLocalStorage);
-    } else {
-      initialize();
-    }
-    if (sessionSigsLocalStorage) {
-      sessionSigsObject = JSON.parse(sessionSigsLocalStorage);
-    }
+    initialize();
   });
 
   $: if (sessionSigs) {
+    // Update sessionStatuses
+    sessionStatuses = Object.entries(sessionSigs).map(([node, data]) => {
+      const sessionKey = JSON.parse(data.signedMessage).sessionKey;
+      const expiration = new Date(JSON.parse(data.signedMessage).expiration);
+      const isExpired = expiration < new Date();
+      return {
+        node,
+        sessionKey,
+        expiration: expiration.toISOString(),
+        isExpired,
+      };
+    });
+
+    // Find an active session and store it in local storage
+    activeSession = sessionStatuses.find(({ isExpired }) => !isExpired);
+    if (activeSession) {
+      localStorage.setItem("google-session", JSON.stringify(activeSession));
+    }
+
     view = "READY";
   }
 
@@ -133,29 +144,26 @@
         <h3>Your PKP Address:</h3>
         <p>{currentPKP.ethAddress}</p>
       </div>
-    {/if}
-    <div class="mt-4 text-center">
-      <h1>Status</h1>
-      <p>{status}</p>
-    </div>
-    <!-- <div class="mt-4 text-center">
-      Session Signature
-      {#if sessionSigsObject}
-        <div class="mt-4 text-center">
-          <h1>Session Signatures</h1>
-          {#each Object.keys(sessionSigsObject) as nodeAddress}
-            <div class="session-sig">
-              <h2>{nodeAddress}</h2>
-              <p>Signature: {sessionSigsObject[nodeAddress].sig}</p>
-              <p>Derived Via: {sessionSigsObject[nodeAddress].derivedVia}</p>
-              <p>Address: {sessionSigsObject[nodeAddress].address}</p>
-              <p>Algorithm: {sessionSigsObject[nodeAddress].algo}</p>
-              <h3>Signed Message</h3>
-              <pre>{sessionSigsObject[nodeAddress].signedMessage}</pre>
-            </div>
-          {/each}
+      Signer
+      <Signer {messageToSign} />
+      Sessions
+      {#if activeSession}
+        <div>
+          <h3>Active Session:</h3>
+          <p>Node: {activeSession.node}</p>
+          <p>Session Key: {activeSession.sessionKey}</p>
+          <p>Expiration: {activeSession.expiration}</p>
         </div>
       {/if}
-    </div> -->
+      {#each sessionStatuses as { node, sessionKey, expiration, isExpired }}
+        <p>
+          {isExpired ? "🔴" : "🟢"} Node: {node}, Session Key: {sessionKey},
+          Expiration: {expiration}
+        </p>
+      {/each}
+    {/if}
+    <div class="mt-4 text-center">
+      <p>{status}</p>
+    </div>
   </div>
 </div>
