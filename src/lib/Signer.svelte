@@ -2,6 +2,7 @@
 <script lang="ts">
   import { ethers } from "ethers";
   import { onMount } from "svelte";
+  import { signRequest } from "./stores.js";
   // import { fetchBalance, serialize } from "@wagmi/core";
 
   export let messageToSign = {};
@@ -92,6 +93,13 @@
       alert(json.verified ? "Signature valid" : "! Signature NOT valid !");
     }
   }
+
+  signRequest.subscribe((value) => {
+    if (value) {
+      signRequest.set(false);
+      signMessageWithPKP();
+    }
+  });
 
   // async function getJWT() {
   //   var unifiedAccessControlConditions = [
