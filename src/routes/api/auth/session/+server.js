@@ -2,7 +2,7 @@
 import jwt from 'jsonwebtoken';
 import { error } from '@sveltejs/kit';
 
-const secretKey = 'mysecrettestkey';
+const secretKey = process.env.JWT_KEY;
 
 export async function GET({ request }) {
   const authHeader = request.headers.get('Authorization');

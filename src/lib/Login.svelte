@@ -2,7 +2,17 @@
   import Cookies from "js-cookie";
 
   async function login() {
-    const response = await fetch("/api/auth", { method: "POST" });
+    const response = await fetch("/api/auth", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: "Sam",
+        loggedIn: true,
+        roles: ["admin"],
+      }),
+    });
     if (!response.ok) {
       alert("Login failed");
     } else {

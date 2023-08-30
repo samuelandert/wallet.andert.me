@@ -68,63 +68,68 @@
         v: result.recid,
       });
 
-      // Display the signed JSON
-      status = JSON.stringify(messageToSign, null, 2);
-
-      // Verify the signature
-      const recoveredAddr = ethers.verifyMessage(jsonString, messageSignature);
-
-      // Check if the address associated with the signature is the same as the current PKP
-      const verified =
-        currentPKP.ethAddress.toLowerCase() === recoveredAddr.toLowerCase();
-
-      if (verified) {
-        status = "The signature is valid.";
-      } else {
-        status = "The signature is invalid.";
-      }
+      // verify();
     } catch (err) {
       console.error(err);
     }
   }
-
-  async function getJWT() {
-    var unifiedAccessControlConditions = [
-      {
-        conditionType: "evmBasic",
-        contractAddress: "",
-        standardContractType: "",
-        chain: "xdai",
-        method: "eth_getBalance",
-        parameters: [":userAddress", "latest"],
-        returnValueTest: {
-          comparator: ">=",
-          value: "10000000000000",
-        },
+  async function verify() {
+    const response = await fetch("/api/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    ];
-
-    // Saving signing condition
-    await litNodeClient.saveSigningCondition({
-      unifiedAccessControlConditions,
-      sessionSigs,
-      resourceId: { test: "hello" },
-      chain: "litSessionSign",
+      body: JSON.stringify({
+        messageToSign,
+        messageSignature,
+        currentPKP,
+      }),
     });
-
-    // Retrieving a signature
-    let jwt = await litNodeClient.getSignedToken({
-      unifiedAccessControlConditions,
-      sessionSigs,
-      resourceId: { test: "hello" },
-    });
-
-    alert("JWT: " + jwt);
+    if (!response.ok) {
+      alert("verify failed");
+    } else {
+      let json = await response.json();
+      alert(json.verified ? "Signature valid" : "! Signature NOT valid !");
+    }
   }
+
+  // async function getJWT() {
+  //   var unifiedAccessControlConditions = [
+  //     {
+  //       conditionType: "evmBasic",
+  //       contractAddress: "",
+  //       standardContractType: "",
+  //       chain: "xdai",
+  //       method: "eth_getBalance",
+  //       parameters: [":userAddress", "latest"],
+  //       returnValueTest: {
+  //         comparator: ">=",
+  //         value: "10000000000000",
+  //       },
+  //     },
+  //   ];
+
+  //   // Saving signing condition
+  //   await litNodeClient.saveSigningCondition({
+  //     unifiedAccessControlConditions,
+  //     sessionSigs,
+  //     resourceId: { test: "hello" },
+  //     chain: "litSessionSign",
+  //   });
+
+  //   // Retrieving a signature
+  //   let jwt = await litNodeClient.getSignedToken({
+  //     unifiedAccessControlConditions,
+  //     sessionSigs,
+  //     resourceId: { test: "hello" },
+  //   });
+
+  //   alert("JWT: " + jwt);
+  // }
 </script>
 
 <button on:click={signMessageWithPKP}>Sign Message</button>
-<button on:click={getJWT}>Get JWT</button>
+<!-- <button on:click={getJWT}>Get JWT</button> -->
 
 {#if messageToSign}
   <pre>{JSON.stringify(messageToSign)}</pre>
@@ -140,4 +145,5 @@
     <h3>Signature</h3>
     <pre>{JSON.stringify(messageSignature)}</pre>
   </div>
+  <button on:click={verify}>Verify</button><br />
 {/if}
