@@ -159,7 +159,7 @@
     <div class="mt-4 text-center">
       <p>{status}</p>
     </div>
-    {#if activeSession}
+    <!-- {#if activeSession}
       <div>
         <h3>Active Session:</h3>
         <p>Node: {activeSession.node}</p>
@@ -174,6 +174,6 @@
           </p>
         {/each}
       {/if}
-    {/if}
+    {/if} -->
   </div>
 </div>

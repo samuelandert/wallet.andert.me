@@ -2,6 +2,7 @@
 <script lang="ts">
   import { ethers } from "ethers";
   import { onMount } from "svelte";
+  // import { fetchBalance, serialize } from "@wagmi/core";
 
   export let messageToSign = {};
 
@@ -23,7 +24,7 @@
     }
   });
 
-  export async function signMessageWithPKP() {
+  async function signMessageWithPKP() {
     const userConfirmed = window.confirm(
       "Do you want to sign the following message?\n\n" +
         JSON.stringify(messageToSign, null, 2)
@@ -86,9 +87,45 @@
       console.error(err);
     }
   }
+
+  async function getJWT() {
+    var unifiedAccessControlConditions = [
+      {
+        conditionType: "evmBasic",
+        contractAddress: "",
+        standardContractType: "",
+        chain: "xdai",
+        method: "eth_getBalance",
+        parameters: [":userAddress", "latest"],
+        returnValueTest: {
+          comparator: ">=",
+          value: "10000000000000",
+        },
+      },
+    ];
+
+    // Saving signing condition
+    await litNodeClient.saveSigningCondition({
+      unifiedAccessControlConditions,
+      sessionSigs,
+      resourceId: { test: "hello" },
+      chain: "litSessionSign",
+    });
+
+    // Retrieving a signature
+    let jwt = await litNodeClient.getSignedToken({
+      unifiedAccessControlConditions,
+      sessionSigs,
+      resourceId: { test: "hello" },
+    });
+
+    alert("JWT: " + jwt);
+  }
 </script>
 
 <button on:click={signMessageWithPKP}>Sign Message</button>
+<button on:click={getJWT}>Get JWT</button>
+
 {#if messageToSign}
   <pre>{JSON.stringify(messageToSign)}</pre>
 {/if}
