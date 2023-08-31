@@ -14,7 +14,7 @@
   let authMethod, provider;
   let status = "Initializing...";
   let pkps: IRelayPKP[] = [];
-  let view = "";
+  let view = "SIGN_IN";
   let myPKP;
 
   onMount(async () => {
@@ -27,7 +27,7 @@
 
   $: {
     if (myPKP) {
-      if (myPKP && myPKP.sessionSigs) {
+      if (myPKP.sessionSigs) {
         myPKP.parsedSigs = parseSessionSigs(myPKP.sessionSigs);
         myPKP.active = myPKP.parsedSigs.some((sig) => !sig.isExpired);
         if (!myPKP.active) {
@@ -40,7 +40,6 @@
       localStorage.setItem("myPKP", JSON.stringify(myPKP));
     }
   }
-
   // Add this function
   function parseSessionSigs(jsonData) {
     let sessionList = Object.values(jsonData).map((session) => {
@@ -74,6 +73,7 @@
 
   async function authWithGoogle() {
     try {
+      view = "";
       if (!provider) {
         provider = await connectProvider();
         status = "Reconnected to Google provider.";
@@ -87,6 +87,7 @@
 
   async function handleRedirect(providerName: string) {
     try {
+      view = "";
       if (!provider) throw new Error("Invalid provider.");
       authMethod = await provider.authenticate();
       status = "Authenticated successfully.";
@@ -105,6 +106,7 @@
   }
 
   async function mint() {
+    view = "";
     const newPKP: IRelayPKP = await mintPkp(provider, authMethod);
     pkps = [...pkps, newPKP];
     status = "New PKP minted.";
@@ -113,6 +115,7 @@
 
   async function createSession(pkp: IRelayPKP) {
     try {
+      view = "";
       const currentPKP = pkp; // Assign the selected PKP to currentPKP
       const sessionSigs = await createLitSession(
         provider,
@@ -143,26 +146,37 @@
   }
 </script>
 
-<div class="flex items-center justify-center h-screen">
-  <div>
+<div class="flex items-center justify-center h-screen bg-gray-100">
+  <div class="p-8 bg-white rounded shadow-md">
     {#if view === "SIGN_IN"}
-      <button on:click={authWithGoogle} class="btn variant-filled">
-        <span><Icon icon="flat-color-icons:google" /></span>
+      <button
+        on:click={authWithGoogle}
+        class="w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-700 flex items-center justify-center"
+      >
+        <span class="mr-2"><Icon icon="flat-color-icons:google" /></span>
         <span>Sign in with Google</span>
       </button>
     {/if}
     {#if view === "READY"}
-      <div>
-        <h3>Your PKP:</h3>
-        <p>Address: {myPKP.pkp.ethAddress}</p>
-        <p>Provider: {myPKP.provider}</p>
-        <button on:click={clearSession} class="btn variant-filled"
+      <div class="mt-4">
+        <h3 class="text-lg font-semibold mb-2">Your PKP:</h3>
+        <p class="mb-1">
+          <span class="font-semibold">Address:</span>
+          {myPKP.pkp.ethAddress}
+        </p>
+        <p class="mb-4">
+          <span class="font-semibold">Provider:</span>
+          {myPKP.provider}
+        </p>
+        <button
+          on:click={clearSession}
+          class="w-full py-2 text-white bg-red-500 rounded hover:bg-red-700"
           >Clear Session</button
         >
       </div>
     {/if}
     <div class="mt-4 text-center">
-      <p>{status}</p>
+      <p class="text-gray-600">{status}</p>
     </div>
   </div>
 </div>

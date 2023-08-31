@@ -96,6 +96,7 @@
         localStorage.setItem("current-pkp", JSON.stringify(currentPKP));
       });
       status = "Session created successfully.";
+      view = "SIGN_IN";
     } catch (err) {
       console.log(err);
     }

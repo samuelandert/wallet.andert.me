@@ -1,6 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { fetchSchema } from './.wundergraph/schemas/fetch-schemas';
+import { fetchSchemas } from './.wundergraph/schemas/fetch-schemas';
+import { vitePreprocess } from '@sveltejs/kit/vite';
 
 export default defineConfig({
 	plugins: [
