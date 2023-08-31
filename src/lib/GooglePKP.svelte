@@ -11,25 +11,50 @@
 
   const redirectUri = "http://localhost:3000/";
 
-  let sessionSigs = null;
-  let currentPKP, authMethod, provider;
+  let authMethod, provider;
   let status = "Initializing...";
   let pkps: IRelayPKP[] = [];
-  let view = "SIGN_IN";
+  let view = "";
+  let myPKP;
 
   onMount(async () => {
     initialize();
-
-    const storedSession = localStorage.getItem("google-session");
-    const storedPKP = localStorage.getItem("current-pkp");
-    if (storedSession != null) {
-      sessionSigs = JSON.parse(storedSession);
-      currentPKP = JSON.parse(storedPKP);
+    myPKP = JSON.parse(localStorage.getItem("myPKP"));
+    if (myPKP.active) {
       view = "READY";
-    } else {
-      view = "SIGN_IN";
     }
   });
+
+  $: {
+    if (myPKP) {
+      if (myPKP && myPKP.sessionSigs) {
+        myPKP.parsedSigs = parseSessionSigs(myPKP.sessionSigs);
+        myPKP.active = myPKP.parsedSigs.some((sig) => !sig.isExpired);
+        if (!myPKP.active) {
+          view = "SIGN_IN";
+        }
+      } else {
+        myPKP.active = false;
+        view = "SIGN_IN";
+      }
+      localStorage.setItem("myPKP", JSON.stringify(myPKP));
+    }
+  }
+
+  // Add this function
+  function parseSessionSigs(jsonData) {
+    let sessionList = Object.values(jsonData).map((session) => {
+      let sessionData = JSON.parse(session.signedMessage);
+      let expirationDate = new Date(sessionData.expiration);
+      let isExpired = expirationDate < new Date();
+      return {
+        sig: session.sig,
+        expiration: sessionData.expiration,
+        isExpired: isExpired,
+      };
+    });
+    return sessionList;
+  }
 
   async function initialize() {
     status = "Connecting to Google provider...";
@@ -88,17 +113,33 @@
 
   async function createSession(pkp: IRelayPKP) {
     try {
-      currentPKP = pkp; // Assign the selected PKP to currentPKP
-      createLitSession(provider, pkp.publicKey, authMethod).then((sigs) => {
-        sessionSigs = sigs;
-        // Store sessionSigs and currentPKP in localStorage
-        localStorage.setItem("google-session", JSON.stringify(sessionSigs));
-        localStorage.setItem("current-pkp", JSON.stringify(currentPKP));
-      });
+      const currentPKP = pkp; // Assign the selected PKP to currentPKP
+      const sessionSigs = await createLitSession(
+        provider,
+        pkp.publicKey,
+        authMethod
+      );
+      // Add the sessionSigs and PKP to localstorage
+      localStorage.setItem(
+        "myPKP",
+        JSON.stringify({
+          provider: "google",
+          pkp: currentPKP,
+          sessionSigs: sessionSigs,
+          active: true,
+        })
+      );
+      myPKP = JSON.parse(localStorage.getItem("myPKP"));
       status = "Session created successfully.";
+      view = "READY";
     } catch (err) {
       console.log(err);
     }
+  }
+  function clearSession() {
+    localStorage.removeItem("myPKP");
+    myPKP = null;
+    view = "SIGN_IN";
   }
 </script>
 
@@ -112,8 +153,12 @@
     {/if}
     {#if view === "READY"}
       <div>
-        <h3>Your PKP Address:</h3>
-        <p>{currentPKP.ethAddress}</p>
+        <h3>Your PKP:</h3>
+        <p>Address: {myPKP.pkp.ethAddress}</p>
+        <p>Provider: {myPKP.provider}</p>
+        <button on:click={clearSession} class="btn variant-filled"
+          >Clear Session</button
+        >
       </div>
     {/if}
     <div class="mt-4 text-center">

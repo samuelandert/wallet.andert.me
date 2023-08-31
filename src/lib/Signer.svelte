@@ -2,11 +2,9 @@
 <script lang="ts">
   import { ethers } from "ethers";
   import { onMount } from "svelte";
-  import { signRequest } from "./stores.js";
-  // import { fetchBalance, serialize } from "@wagmi/core";
+  import { signRequest, signedMessages } from "./stores.js";
 
-  export let messageToSign = {};
-
+  let messageToSign = {};
   let currentPKP;
   let sessionSigs;
   let status = "";
@@ -69,6 +67,11 @@
         v: result.recid,
       });
 
+      signedMessages.update((messages) => [
+        ...messages,
+        { json: messageToSign, signature: messageSignature },
+      ]);
+
       // verify();
     } catch (err) {
       console.error(err);
@@ -94,54 +97,14 @@
     }
   }
 
-  signRequest.subscribe((value) => {
-    if (value) {
-      signRequest.set(false);
-      signMessageWithPKP();
+  signRequest.subscribe(({ json }) => {
+    if (messageToSign && Object.keys(json).length > 0) {
+      signRequest.set({ json: {} });
+      messageToSign = json;
+      signMessageWithPKP(json);
     }
   });
-
-  // async function getJWT() {
-  //   var unifiedAccessControlConditions = [
-  //     {
-  //       conditionType: "evmBasic",
-  //       contractAddress: "",
-  //       standardContractType: "",
-  //       chain: "xdai",
-  //       method: "eth_getBalance",
-  //       parameters: [":userAddress", "latest"],
-  //       returnValueTest: {
-  //         comparator: ">=",
-  //         value: "10000000000000",
-  //       },
-  //     },
-  //   ];
-
-  //   // Saving signing condition
-  //   await litNodeClient.saveSigningCondition({
-  //     unifiedAccessControlConditions,
-  //     sessionSigs,
-  //     resourceId: { test: "hello" },
-  //     chain: "litSessionSign",
-  //   });
-
-  //   // Retrieving a signature
-  //   let jwt = await litNodeClient.getSignedToken({
-  //     unifiedAccessControlConditions,
-  //     sessionSigs,
-  //     resourceId: { test: "hello" },
-  //   });
-
-  //   alert("JWT: " + jwt);
-  // }
 </script>
-
-<button on:click={signMessageWithPKP}>Sign Message</button>
-<!-- <button on:click={getJWT}>Get JWT</button> -->
-
-{#if messageToSign}
-  <pre>{JSON.stringify(messageToSign)}</pre>
-{/if}
 
 {#if status}
   <div class="mt-4 text-center">
@@ -150,7 +113,7 @@
 {/if}
 {#if messageSignature}
   <div class="mt-4 text-center">
-    <h3>Signature</h3>
+    <p>Signature</p>
     <pre>{JSON.stringify(messageSignature)}</pre>
   </div>
   <button on:click={verify}>Verify</button><br />
