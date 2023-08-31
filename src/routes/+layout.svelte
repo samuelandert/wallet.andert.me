@@ -20,6 +20,11 @@
   }
 </script>
 
-<QueryClientProvider client={data.queryClient}>
-  <slot />
-</QueryClientProvider>
+<div
+  class="flex items-center justify-center h-screen bg-cover bg-center"
+  style="background-image: url('lake.jpeg');"
+>
+  <QueryClientProvider client={data.queryClient}>
+    <slot />
+  </QueryClientProvider>
+</div>

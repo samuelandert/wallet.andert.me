@@ -29,9 +29,12 @@
     if (myPKP) {
       if (myPKP.sessionSigs) {
         myPKP.parsedSigs = parseSessionSigs(myPKP.sessionSigs);
+        console.log("test:  " + JSON.stringify(myPKP.parsedSigs));
         myPKP.active = myPKP.parsedSigs.some((sig) => !sig.isExpired);
         if (!myPKP.active) {
           view = "SIGN_IN";
+        } else if (myPKP.active) {
+          view = "READY";
         }
       } else {
         myPKP.active = false;
@@ -40,7 +43,6 @@
       localStorage.setItem("myPKP", JSON.stringify(myPKP));
     }
   }
-  // Add this function
   function parseSessionSigs(jsonData) {
     let sessionList = Object.values(jsonData).map((session) => {
       let sessionData = JSON.parse(session.signedMessage);
@@ -48,7 +50,7 @@
       let isExpired = expirationDate < new Date();
       return {
         sig: session.sig,
-        expiration: sessionData.expiration,
+        expiration: expirationDate,
         isExpired: isExpired,
       };
     });
@@ -146,9 +148,9 @@
   }
 </script>
 
-<div class="flex items-center justify-center h-screen bg-gray-100">
-  <div class="p-8 bg-white rounded shadow-md">
-    {#if view === "SIGN_IN"}
+<div>
+  {#if view === "SIGN_IN"}
+    <div class="p-8 bg-white bg-opacity-75 rounded shadow-md">
       <button
         on:click={authWithGoogle}
         class="w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-700 flex items-center justify-center"
@@ -156,27 +158,43 @@
         <span class="mr-2"><Icon icon="flat-color-icons:google" /></span>
         <span>Sign in with Google</span>
       </button>
-    {/if}
-    {#if view === "READY"}
-      <div class="mt-4">
-        <h3 class="text-lg font-semibold mb-2">Your PKP:</h3>
-        <p class="mb-1">
-          <span class="font-semibold">Address:</span>
-          {myPKP.pkp.ethAddress}
-        </p>
-        <p class="mb-4">
-          <span class="font-semibold">Provider:</span>
-          {myPKP.provider}
-        </p>
+    </div>
+  {/if}
+  {#if view != "READY"}
+    <div class="px-4 bg-white bg-opacity-75 rounded shadow-md">
+      <div class="mt-4 text-center">
+        <p class="text-gray-600">{status}</p>
+      </div>
+    </div>
+  {/if}
+  {#if view === "READY"}
+    <div
+      class="fixed bottom-0 left-0 right-0 p-3 bg-white bg-opacity-75 rounded-t-lg shadow-md flex flex-col items-center space-y-4"
+    >
+      <div class="w-full flex items-center justify-between space-x-4">
+        <div class="flex items-center space-x-2">
+          <Icon
+            icon="ic:baseline-account-circle"
+            class="text-gray-500 w-12 h-12"
+          />
+          <div>
+            <p class="text-sm">
+              <span class="font-semibold">Address:</span>
+              {myPKP.pkp.ethAddress}
+            </p>
+            <p class="text-xs">
+              <span class="font-semibold">Provider:</span>
+              {myPKP.provider}
+            </p>
+          </div>
+        </div>
         <button
           on:click={clearSession}
-          class="w-full py-2 text-white bg-red-500 rounded hover:bg-red-700"
-          >Clear Session</button
+          class="py-1 px-2 text-white bg-red-500 rounded hover:bg-red-700"
         >
+          Clear Session
+        </button>
       </div>
-    {/if}
-    <div class="mt-4 text-center">
-      <p class="text-gray-600">{status}</p>
     </div>
-  </div>
+  {/if}
 </div>
