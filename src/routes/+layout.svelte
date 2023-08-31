@@ -6,10 +6,19 @@
   import Cookies from "js-cookie";
   import { onMount } from "svelte";
   import { initChainProvider } from "$lib/setupChainProvider";
+  import { googleSession } from "$lib/stores.js";
+  import GoogleSigner from "$lib/GoogleSigner.svelte";
+  import GooglePKP from "$lib/GooglePKP.svelte";
+
+  let activeSession = true;
 
   export let data: LayoutData;
 
   const token = Cookies.get("token");
+
+  googleSession.subscribe((value) => {
+    activeSession = value.activeSession;
+  });
 
   onMount(() => {
     initChainProvider();
@@ -25,6 +34,9 @@
   style="background-image: url('lake.jpeg');"
 >
   <QueryClientProvider client={data.queryClient}>
+    <div class="text-lg bg-white">{activeSession}</div>
     <slot />
+    {#if activeSession}active {:else} <GooglePKP /> {/if}
+    <GoogleSigner />
   </QueryClientProvider>
 </div>

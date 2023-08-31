@@ -1,23 +1,14 @@
-<script>
-  import GooglePKP from "$lib/GooglePKP.svelte";
-  // import { signRequest, signedMessages } from "$lib/stores.js";
+<script lang="ts">
+  // import { signRequest } from "$lib/stores.js";
 
   // function trigger() {
   //   signRequest.set({ json: { hello: "test" } });
   // }
+
+  // import type { PageData } from "./$types";
+  // export let data: PageData;
 </script>
 
-<GooglePKP />
-<!-- <button on:click={trigger}>Sign Request</button> -->
+<!-- <div class="bg-white">myPKP {data.myPKP}</div> -->
 
-<!-- <ul>
-  {#each $signedMessages as { json, signature }}
-    <li>
-      <strong>Message:</strong>
-      {JSON.stringify(json)}
-      <br />
-      <strong>Signature:</strong>
-      {JSON.stringify(signature)}
-    </li>
-  {/each}
-</ul> -->
+<!-- <button on:click={trigger}>Sign Request</button> -->
