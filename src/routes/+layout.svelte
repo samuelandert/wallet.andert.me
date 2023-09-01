@@ -7,10 +7,11 @@
   import { onMount } from "svelte";
   import { initChainProvider } from "$lib/setupChainProvider";
   import { googleSession } from "$lib/stores.js";
-  import GoogleSigner from "$lib/GoogleSigner.svelte";
   import GooglePKP from "$lib/GooglePKP.svelte";
+  import GoogleSession from "$lib/GoogleSession.svelte";
+  import Wallet from "$lib/Wallet.svelte";
 
-  let activeSession = true;
+  let activeSession = false;
 
   export let data: LayoutData;
 
@@ -34,9 +35,11 @@
   style="background-image: url('lake.jpeg');"
 >
   <QueryClientProvider client={data.queryClient}>
-    <div class="text-lg bg-white">{activeSession}</div>
+    <Wallet />
+    <!-- <GoogleSession />
+    <div class="text-lg bg-white">{activeSession}</div> -->
     <slot />
-    {#if activeSession}active {:else} <GooglePKP /> {/if}
-    <GoogleSigner />
+    <!-- {#if activeSession}active {:else} expired {/if}
+    <GooglePKP /> -->
   </QueryClientProvider>
 </div>

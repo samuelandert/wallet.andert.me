@@ -53,7 +53,7 @@
   }
 </script>
 
-{#if myPKP}
+<!-- {#if myPKP}
   <div
     class="fixed bottom-0 left-0 right-0 p-3 bg-white bg-opacity-75 rounded-t-lg shadow-md flex flex-col items-center space-y-4"
   >
@@ -82,4 +82,4 @@
       </button>
     </div>
   </div>
-{/if}
+{/if} -->

@@ -6,6 +6,7 @@
   } from "@lit-protocol/lit-auth-client";
   import type { IRelayPKP } from "@lit-protocol/types";
   import Icon from "@iconify/svelte";
+  import { mintPkp } from "./mintPkp";
   import { createLitSession } from "./createLitSession";
   import { connectProvider } from "./setupLit";
 
