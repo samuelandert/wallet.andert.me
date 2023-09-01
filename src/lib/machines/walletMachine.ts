@@ -2,6 +2,7 @@
 import { createMachine, assign } from 'xstate';
 import { signInWithGoogle } from '../services/signInWithGoogle';
 import { createSession } from '../services/createSession';
+import { goto } from '$app/navigation';
 
 const walletMachine = createMachine({
     id: 'wallet',
@@ -11,7 +12,8 @@ const walletMachine = createMachine({
         providerName: null,
         authMethod: null,
         pkps: [],
-        sessionSigs: null
+        sessionSigs: null,
+        redirect: false
     },
     states: {
         signIn: {
@@ -83,11 +85,26 @@ const walletMachine = createMachine({
             on: {
                 EXPIRED: {
                     target: 'sessionExpired',
-                    cond: (context) => context.sessionSigs === null
+                    cond: (context) => context.sessionSigs && Object.values(context.sessionSigs).every(sig => sig.expired)
+                },
+                LOGOUT: 'sessionExpired'
+            }
+        },
+        sessionExpired: {
+            entry: assign({
+                sessionSigs: null,
+                redirect: true
+            }),
+            after: {
+                0: {
+                    target: 'signIn',
+                    actions: () => {
+                        localStorage.removeItem('me');
+                        window.location.href = '/';
+                    }
                 }
             }
         },
-        sessionExpired: {}
     },
 }, {
     services: {

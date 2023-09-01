@@ -35,6 +35,7 @@
   "dependencies": {
     "@graphql-tools/graphql-file-loader": "^8.0.0",
     "@graphql-tools/load": "^8.0.0",
+    "@iconify/icons-ion": "^1.2.10",
     "@iconify/svelte": "^3.1.4",
     "@lit-protocol/auth-helpers": "^2.2.50",
     "@lit-protocol/constants": "^2.2.50",

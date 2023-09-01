@@ -7,8 +7,6 @@
   import { onMount } from "svelte";
   import { initChainProvider } from "$lib/setupChainProvider";
   import { googleSession } from "$lib/stores.js";
-  import GooglePKP from "$lib/GooglePKP.svelte";
-  import GoogleSession from "$lib/GoogleSession.svelte";
   import Wallet from "$lib/Wallet.svelte";
 
   let activeSession = false;

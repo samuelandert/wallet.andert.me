@@ -7,6 +7,9 @@ dependencies:
   '@graphql-tools/load':
     specifier: ^8.0.0
     version: 8.0.0(graphql@16.8.0)
+  '@iconify/icons-ion':
+    specifier: ^1.2.10
+    version: 1.2.10
   '@iconify/svelte':
     specifier: ^3.1.4
     version: 3.1.4(svelte@3.54.0)
@@ -2610,6 +2613,12 @@ packages:
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
     dependencies:
       '@hapi/hoek': 9.3.0
+
+  /@iconify/icons-ion@1.2.10:
+    resolution: {integrity: sha512-8vd2gihc8fkugNH+bqnNpgAbXJl2AyTiGRgpDG/ELDUyscvUefEE/kW7uz6NnPUYH293vR+tdiruLIgvVsQfNA==}
+    dependencies:
+      '@iconify/types': 2.0.0
+    dev: false
 
   /@iconify/svelte@3.1.4(svelte@3.54.0):
     resolution: {integrity: sha512-YDwQlN46ka8KPRayDb7TivmkAPizfTXi6BSRNqa1IV0+byA907n8JcgQafA7FD//pW5XCuuAhVx6uRbKTo+CfA==}
