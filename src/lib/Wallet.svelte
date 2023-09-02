@@ -3,13 +3,20 @@
   import walletMachine from "./machines/walletMachine";
   import { onMount } from "svelte";
   import Icon from "@iconify/svelte";
+  import { walletState } from "./stores";
+  import { messageToSign } from "./stores";
 
   import {
     signInWithGoogle,
     startSignIn as startSignInService,
   } from "./services/signInWithGoogle";
+  import Signer from "./Signer.svelte";
+  import { getDrawerStore } from "@skeletonlabs/skeleton";
 
   const { state, send } = useMachine(walletMachine);
+  const drawerStore = getDrawerStore();
+
+  $: walletState.set($state.context);
 
   $: {
     if ($state.context.pkps && $state.context.sessionSigs) {
@@ -33,8 +40,15 @@
     startSignInService.set(true);
     await signInWithGoogle();
   }
+
   function clearSession() {
     send("LOGOUT");
+  }
+
+  function signRequest() {
+    const settings = { position: "bottom", id: "signMessage" };
+    drawerStore.open(settings);
+    messageToSign.set({ hello: "test" });
   }
 </script>
 
@@ -43,7 +57,7 @@
     <div class="w-1/3">
       <button
         on:click={startSignIn}
-        class="w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-700 flex items-center justify-center"
+        class="flex items-center justify-center w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-700"
       >
         <span class="mr-2"><Icon icon="flat-color-icons:google" /></span>
         <span>Sign in with Google</span>
@@ -51,9 +65,9 @@
     </div>
   {:else if $state.context.pkps}
     <div
-      class="fixed bottom-0 left-0 right-0 p-3 bg-white bg-opacity-75 rounded-t-lg shadow-md flex flex-col items-center space-y-4"
+      class="fixed bottom-0 left-0 right-0 flex flex-col items-center p-3 space-y-4 bg-white bg-opacity-75 rounded-t-lg shadow-md"
     >
-      <div class="w-full flex items-center justify-between space-x-4">
+      <div class="flex items-center justify-between w-full space-x-4">
         <div class="flex items-center space-x-2">
           <div>
             <p class="text-sm">
@@ -66,23 +80,23 @@
             </p>
           </div>
         </div>
-        <button
-          on:click={clearSession}
-          class="py-1 px-2 text-white bg-red-500 rounded hover:bg-red-700"
+        <button on:click={signRequest} type="button" class="btn variant-filled"
+          >SignRequest</button
         >
-          Logout
-        </button>
+        <button type="button" class="btn variant-filled" on:click={clearSession}
+          >Logout</button
+        >
       </div>
     </div>
   {:else if $state.matches("sessionExpired")}
-    <div class="bg-white p-10">
+    <div class="p-10 bg-white">
       <p>Error creating session. Please try again.</p>
       <pre>{JSON.stringify($state.context.error, null, 2)}</pre>
     </div>
   {/if}
 {:else}
-  <div class="bg-white p-10 rounded-full">
-    <div class="bg-white rounded-full p-5 animate-spin">
+  <div class="p-10 bg-white rounded-full">
+    <div class="p-5 bg-white rounded-full animate-spin">
       <Icon icon="la:spinner" width="100" height="100" />
     </div>
   </div>

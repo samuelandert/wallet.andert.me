@@ -8,6 +8,13 @@
   import { initChainProvider } from "$lib/setupChainProvider";
   import { googleSession } from "$lib/stores.js";
   import Wallet from "$lib/Wallet.svelte";
+  import { Drawer, initializeStores } from "@skeletonlabs/skeleton";
+  import { getDrawerStore } from "@skeletonlabs/skeleton";
+  import Signer from "$lib/Signer.svelte";
+
+  initializeStores();
+
+  const drawerStore = getDrawerStore();
 
   let activeSession = false;
 
@@ -28,8 +35,16 @@
   }
 </script>
 
+<Drawer>
+  {#if $drawerStore.id === "signMessage"}
+    <Signer messageToSign={{ hello: "me" }} />
+  {:else}
+    <!-- (fallback contents) -->
+  {/if}</Drawer
+>
+
 <div
-  class="flex items-center justify-center h-screen bg-cover bg-center"
+  class="flex items-center justify-center h-screen bg-center bg-cover"
   style="background-image: url('lake.jpeg');"
 >
   <QueryClientProvider client={data.queryClient}>
