@@ -1,23 +1,21 @@
 <script lang="ts">
   import { signMessageWithPKP } from "$lib/services/signMessage";
-  import { walletState, messageToSign, messageSignature } from "$lib/stores.js";
+  import { walletState, signRequest } from "$lib/stores.js";
 
   let currentPKP;
   let sessionSigs;
   let message;
   let signature;
+  let status = "WAITING FOR SIGNATURE";
 
   walletState.subscribe((value) => {
     currentPKP = value.pkps[0];
     sessionSigs = value.sessionSigs;
   });
 
-  messageToSign.subscribe((value) => {
-    message = value;
-  });
-
-  messageSignature.subscribe((value) => {
-    signature = value;
+  signRequest.subscribe((value) => {
+    message = value.messageToSign;
+    signature = value.signature;
   });
 
   async function signMessage() {
@@ -25,17 +23,27 @@
     if (result.error) {
       console.error(result.error);
     } else {
-      messageSignature.set(result.messageSignature);
+      (status = "SIGNED"),
+        signRequest.set({
+          messageToSign: message,
+          signature: result.messageSignature,
+          drawer: true,
+        });
     }
   }
 
   function declineSign() {
-    messageSignature.set(null);
+    signRequest.set({
+      messageToSign: {},
+      signature: null,
+      drawer: false,
+    });
   }
 </script>
 
 <div class="flex flex-col items-center justify-center h-full space-y-4">
-  <p class="text-lg break-words">{JSON.stringify(message)}</p>
+  <p class="text-sm font-bold">{status}</p>
+  <p class="text-lg break-words max-w-2/3">{JSON.stringify(message)}</p>
   {#if signature}
     <p class="text-sm font-bold break-words">
       Signature: {JSON.stringify(signature)}

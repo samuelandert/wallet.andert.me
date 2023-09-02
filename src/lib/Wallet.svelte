@@ -3,14 +3,12 @@
   import walletMachine from "./machines/walletMachine";
   import { onMount } from "svelte";
   import Icon from "@iconify/svelte";
-  import { walletState } from "./stores";
-  import { messageToSign } from "./stores";
+  import { walletState, signRequest } from "./stores";
 
   import {
     signInWithGoogle,
     startSignIn as startSignInService,
   } from "./services/signInWithGoogle";
-  import Signer from "./Signer.svelte";
   import { getDrawerStore } from "@skeletonlabs/skeleton";
 
   const { state, send } = useMachine(walletMachine);
@@ -45,13 +43,24 @@
     send("LOGOUT");
   }
 
-  function signRequest() {
+  function signRequestTrigger() {
+    signRequest.set({
+      status: "SIGN REQUEST",
+      messageToSign: { hello: "test" },
+      signature: null,
+      drawer: true,
+    });
+  }
+
+  $: if ($signRequest.drawer) {
     const settings = { position: "bottom", id: "signMessage" };
     drawerStore.open(settings);
-    messageToSign.set({ hello: "test" });
+  } else {
+    drawerStore.close();
   }
 </script>
 
+<!-- ... existing markup ... -->
 {#if $state.matches("sessionAvailable") || $state.matches("creatingSession") || $state.matches("signIn")}
   {#if $state.matches("signIn")}
     <div class="w-1/3">
@@ -80,8 +89,10 @@
             </p>
           </div>
         </div>
-        <button on:click={signRequest} type="button" class="btn variant-filled"
-          >SignRequest</button
+        <button
+          on:click={signRequestTrigger}
+          type="button"
+          class="btn variant-filled">SignRequest</button
         >
         <button type="button" class="btn variant-filled" on:click={clearSession}
           >Logout</button
