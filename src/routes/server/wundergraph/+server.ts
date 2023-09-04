@@ -13,18 +13,19 @@ export async function GET({ request }) {
     }
 
     try {
-        const { payload } = await verifyJwt({ jwt: token });
+        const { verified, payload } = await verifyJwt({ jwt: token });
         if (
-            payload.baseUrl !== "https://localhost:3000/" ||
-            payload.path !== "wunderauth" ||
+            payload.baseUrl !== "https://localhost:3000" ||
+            payload.path !== "/server/wundergraph" ||
             payload.orgId !== "°" ||
             payload.role !== "owner" ||
             payload.extraData !== ""
         ) {
             console.log("JWT payload not matching");
-            throw error(401, "JWT payload not macting")
+            throw error(401, "JWT payload not matching")
         }
-        console.log(payload);
+        console.log("JWT Server request verified: ", verified);
+        console.log("JWT Server request payload: ", payload);
         return new Response(JSON.stringify(payload), { status: 200 });
     } catch (err) {
         console.log("JWT error");

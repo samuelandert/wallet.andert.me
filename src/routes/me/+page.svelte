@@ -1,6 +1,5 @@
 <script lang="ts">
   import { createQuery } from "../../lib/wundergraph";
-  import JWT from "$lib/JWT.svelte";
 
   const projectsQuery = createQuery({
     operationName: "Projects",
@@ -8,8 +7,6 @@
 </script>
 
 <div class="w-full h-full overflow-y-auto">
-  <JWT />
-
   <div class="w-full h-full results">
     {#if $projectsQuery.isLoading}
       <p>Loading...</p>

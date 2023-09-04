@@ -27,12 +27,14 @@ export const createJWT = async () => {
             contractAddress: '',
             standardContractType: '',
             chain: 'xdai',
-            method: 'eth_getBalance',
-            parameters: [':userAddress', 'latest'],
+            method: '',
+            parameters: [
+                ':userAddress',
+            ],
             returnValueTest: {
-                comparator: '>=',
-                value: '1000000000000',
-            },
+                comparator: '=',
+                value: '0x4b975F10baf1153A5CC688B52d55809cd2d8BB57'
+            }
         },
     ];
 

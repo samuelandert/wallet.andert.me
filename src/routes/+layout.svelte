@@ -20,7 +20,21 @@
 
   export let data: LayoutData;
 
-  const token = Cookies.get("token");
+  const signingConditionsCookie = Cookies.get("signingConditions");
+  let signingConditions = signingConditionsCookie
+    ? JSON.parse(signingConditionsCookie)
+    : [];
+  console.log("layout signingConditions: ", signingConditions); // Add this line
+  let correctCondition = signingConditions
+    ? signingConditions.find(
+        (condition) =>
+          condition.resourceId.baseUrl === "https://localhost:3000" &&
+          condition.resourceId.path === "/server/wundergraph"
+      )
+    : null;
+  console.log("layout correctcondition: ", correctCondition); // Update this line
+
+  const token = correctCondition ? correctCondition.jwt : null;
 
   googleSession.subscribe((value) => {
     activeSession = value.activeSession;
@@ -31,7 +45,7 @@
   });
 
   if (token) {
-    console.log("layout jwt token: " + token);
+    console.log("layout token: ", token); // Update this line
     client.setAuthorizationToken(token);
   }
 </script>

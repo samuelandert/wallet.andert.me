@@ -59,7 +59,7 @@ configureWunderGraphApplication({
 		tokenBased: {
 			providers: [
 				{
-					userInfoEndpoint: 'http://localhost:3000/jwt/wunderauth',
+					userInfoEndpoint: 'http://localhost:3000/server/wundergraph',
 				},
 			],
 		},
