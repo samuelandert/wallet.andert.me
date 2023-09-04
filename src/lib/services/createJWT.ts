@@ -1,7 +1,7 @@
 import { LitNodeClient } from "@lit-protocol/lit-node-client";
 import type { AccsEVMParams } from "@lit-protocol/types";
 
-export const createJwt = async () => {
+export const createJWT = async () => {
 
     const litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
     await litNodeClient.connect();
@@ -13,10 +13,10 @@ export const createJwt = async () => {
 
     const resourceId = {
         baseUrl: "https://localhost:3000/",
-        path: "/wunderauth",
+        path: "wunderauth",
         orgId: "°",
-        role: "admin",
-        extraData: "{loggedIn: true}"
+        role: "owner",
+        extraData: ""
     }
 
     const sessionSigs = me.sessionSigs;

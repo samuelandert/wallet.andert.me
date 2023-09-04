@@ -1,16 +1,17 @@
 <script>
-  import { createJwt } from "$lib/services/createJwt";
+  import { createJWT } from "$lib/services/createJWT";
+  import Cookies from "js-cookie";
 
   let jwt = "";
 
-  async function handleClick() {
-    jwt = await createJwt();
+  async function handleCreateClick() {
+    jwt = await createJWT();
+    Cookies.set("token", jwt);
   }
 </script>
 
 <div class="p-12">
-  <button on:click={handleClick} class="btn variant-filled-primary"
+  <button on:click={handleCreateClick} class="btn variant-filled-primary"
     >Create JWT</button
   >
-  <p class="text-xs">{jwt}</p>
 </div>

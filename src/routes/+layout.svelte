@@ -31,6 +31,7 @@
   });
 
   if (token) {
+    console.log("layout jwt token: " + token);
     client.setAuthorizationToken(token);
   }
 </script>
