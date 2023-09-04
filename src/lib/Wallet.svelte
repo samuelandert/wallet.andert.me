@@ -4,7 +4,6 @@
   import { onMount } from "svelte";
   import Icon from "@iconify/svelte";
   import { walletState, signRequest } from "./stores";
-
   import {
     signInWithGoogle,
     startSignIn as startSignInService,

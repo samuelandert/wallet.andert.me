@@ -12,19 +12,14 @@ export const createSession = async (provider, authMethod, pkps: IRelayPKP[]) => 
             currentPKP = pkps[0];
         }
 
-        console.log('Current PKP:', currentPKP); // Debug log
-
         const sessionSigs = await createLitSession(
             provider,
             currentPKP.publicKey,
-            authMethod
+            authMethod,
         );
-
-        console.log('Session Signatures:', sessionSigs); // Debug log
 
         return { pkps, sessionSigs };
     } catch (error) {
-        console.error('Error in createSession:', error); // Debug log
         throw new Error(`Failed to create session: ${error.message}`);
     }
 };

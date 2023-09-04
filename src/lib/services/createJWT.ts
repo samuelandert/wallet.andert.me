@@ -1,17 +1,27 @@
-// src/lib/services/createJwt.ts
-import { createSession } from './createSession';
-import type { IProvider } from '$lib/IProvider';
+import { LitNodeClient } from "@lit-protocol/lit-node-client";
+import type { AccsEVMParams } from "@lit-protocol/types";
 
-export const createJwt = async (provider: IProvider, authMethod: any, pkps: IRelayPKP[]) => {
-    const { sessionSigs } = await createSession(provider, authMethod, pkps);
+export const createJwt = async () => {
 
-    const litNodeClient = new LitNodeClient({
-        provider,
-        chain: 'xdai',
-        authSig: sessionSigs,
-    });
+    const litNodeClient = new LitNodeClient({ litNetwork: "serrano" });
+    await litNodeClient.connect();
 
-    const unifiedAccessControlConditions = [
+    const me = JSON.parse(localStorage.getItem('me'));
+    if (!me || !me.sessionSigs) {
+        throw new Error('No sessionSigs found in local storage');
+    }
+
+    const resourceId = {
+        baseUrl: "https://localhost:3000/",
+        path: "/wunderauth",
+        orgId: "°",
+        role: "admin",
+        extraData: "{loggedIn: true}"
+    }
+
+    const sessionSigs = me.sessionSigs;
+
+    const unifiedAccessControlConditions: AccsEVMParams[] = [
         {
             conditionType: 'evmBasic',
             contractAddress: '',
@@ -21,15 +31,24 @@ export const createJwt = async (provider: IProvider, authMethod: any, pkps: IRel
             parameters: [':userAddress', 'latest'],
             returnValueTest: {
                 comparator: '>=',
-                value: '10000000000000',
+                value: '1000000000000',
             },
         },
     ];
 
-    const jwt = await litNodeClient.getSignedToken({
+    await litNodeClient.saveSigningCondition({
         unifiedAccessControlConditions,
         sessionSigs,
-        resourceId: 'wundergraph-auth', // replace with your resource id
+        resourceId,
+        chain: "litSessionSign",
+    });
+
+
+    const jwt = await litNodeClient.getSignedToken({
+        unifiedAccessControlConditions,
+        chain: 'xdai',
+        sessionSigs,
+        resourceId
     });
 
     return jwt;

@@ -2,7 +2,6 @@
 import { createMachine, assign } from 'xstate';
 import { signInWithGoogle } from '../services/signInWithGoogle';
 import { createSession } from '../services/createSession';
-import { goto } from '$app/navigation';
 
 const walletMachine = createMachine({
     id: 'wallet',
@@ -70,7 +69,6 @@ const walletMachine = createMachine({
                             pkps: (_, event) => event.data.pkps,
                             sessionSigs: (_, event) => event.data.sessionSigs,
                         }),
-                        (context) => console.log('Context after creating session:', context), // Debug log
                     ],
                 },
                 onError: {
