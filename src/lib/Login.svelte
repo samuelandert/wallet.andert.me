@@ -24,4 +24,4 @@
   }
 </script>
 
-<button on:click={login}>Login</button>
+<button on:click={login} class="btn variant-filled-primary">Login</button>

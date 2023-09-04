@@ -44,15 +44,24 @@
 >
 
 <div
-  class="flex items-center justify-center h-screen bg-center bg-cover"
+  class="grid h-screen bg-center bg-cover grid-rows-layout"
   style="background-image: url('lake.jpeg');"
 >
   <QueryClientProvider client={data.queryClient}>
-    <Wallet />
-    <!-- <GoogleSession />
-    <div class="text-lg bg-white">{activeSession}</div> -->
-    <slot />
-    <!-- {#if activeSession}active {:else} expired {/if}
-    <GooglePKP /> -->
+    <div class="w-full h-full p-6 overflow-hidden">
+      <div class="w-full h-full overflow-hidden bg-white rounded-xl">
+        <slot />
+      </div>
+    </div>
   </QueryClientProvider>
+
+  <div class="row-start-2 row-end-3">
+    <Wallet />
+  </div>
 </div>
+
+<style>
+  .grid-rows-layout {
+    grid-template-rows: 1fr auto;
+  }
+</style>

@@ -11,7 +11,7 @@ export async function createLitSession(
         pkpPublicKey,
         authMethod,
         sessionSigsParams: {
-            chain: 'ethereum',
+            chain: 'xdai',
             resourceAbilityRequests: [
                 {
                     resource: litResource,

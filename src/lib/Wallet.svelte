@@ -60,21 +60,22 @@
   }
 </script>
 
-<!-- ... existing markup ... -->
 {#if $state.matches("sessionAvailable") || $state.matches("creatingSession") || $state.matches("signIn")}
   {#if $state.matches("signIn")}
-    <div class="w-1/3">
-      <button
-        on:click={startSignIn}
-        class="flex items-center justify-center w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-700"
-      >
-        <span class="mr-2"><Icon icon="flat-color-icons:google" /></span>
-        <span>Sign in with Google</span>
-      </button>
+    <div class="flex items-center justify-center pb-4">
+      <div class="flex flex-col items-center w-1/3">
+        <button
+          on:click={startSignIn}
+          class="flex items-center justify-center w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-700"
+        >
+          <span class="mr-2"><Icon icon="flat-color-icons:google" /></span>
+          <span>Sign in with Google</span>
+        </button>
+      </div>
     </div>
   {:else if $state.context.pkps}
     <div
-      class="fixed bottom-0 left-0 right-0 flex flex-col items-center p-3 space-y-4 bg-white bg-opacity-75 rounded-t-lg shadow-md"
+      class="flex flex-col items-center p-3 space-y-4 bg-white bg-opacity-75 rounded-t-lg shadow-md"
     >
       <div class="flex items-center justify-between w-full space-x-4">
         <div class="flex items-center space-x-2">
