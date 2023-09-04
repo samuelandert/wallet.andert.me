@@ -12,6 +12,6 @@
 
 <div class="p-12">
   <button on:click={handleCreateClick} class="btn variant-filled-primary"
-    >Create JWT</button
+    >Wundergraph Login</button
   >
 </div>
