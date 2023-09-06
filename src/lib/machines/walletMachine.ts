@@ -52,7 +52,7 @@ const walletMachine = createMachine({
                     actions: [
                         assign({
                             pkps: (_, event) => event.data,
-                        })
+                        }),
                     ],
                 },
                 onError: 'authenticated',

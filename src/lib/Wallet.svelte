@@ -9,6 +9,7 @@
     startSignIn as startSignInService,
   } from "./services/signInWithGoogle";
   import { getDrawerStore } from "@skeletonlabs/skeleton";
+  import { goto } from "$app/navigation";
 
   const { state, send } = useMachine(walletMachine);
   const drawerStore = getDrawerStore();
@@ -66,7 +67,7 @@
       <div class="flex flex-col items-center w-1/3">
         <button
           on:click={startSignIn}
-          class="flex items-center justify-center w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-700"
+          class="btn variant-filled flex items-center justify-center py-2"
         >
           <span class="mr-2"><Icon icon="flat-color-icons:google" /></span>
           <span>Sign in with Google</span>
@@ -78,22 +79,20 @@
       <div class="flex items-center justify-between w-full space-x-4">
         <div class="w-full h-full overflow-hidden grid grid-cols-6">
           <aside class="col-span-1">
-            <div class="flex items-center space-x-2">
-              <Icon
-                icon="iconamoon:profile-circle-fill"
-                class="w-12 h-12 text-gray-500"
-              />
-              <div>
-                <p class="text-sm">
-                  <span class="font-semibold">Address:</span>
-                  {$state.context.pkps[0].ethAddress.substring(0, 8) + "..."}
-                </p>
-                <p class="text-xs">
-                  <span class="font-semibold">Provider:</span>
-                  {$state.context.providerName}
-                </p>
+            <a href="/me" on:click|preventDefault={() => goto("/me")}>
+              <div class="flex items-center space-x-2">
+                <Icon
+                  icon="iconamoon:profile-circle-fill"
+                  class="w-12 h-12 text-gray-500"
+                />
+                <div>
+                  <div class="text-sm">
+                    <div class="font-semibold">Address</div>
+                    {$state.context.pkps[0].ethAddress.substring(0, 8) + "..."}
+                  </div>
+                </div>
               </div>
-            </div>
+            </a>
           </aside>
           <div class="col-span-5 w-full">
             <div class="flex justify-end space-x-4">
@@ -132,9 +131,9 @@
     </div>
   {/if}
 {:else}
-  <div class="p-10 bg-white rounded-full">
-    <div class="p-5 bg-white rounded-full animate-spin">
-      <Icon icon="la:spinner" width="100" height="100" />
+  <div class="flex justify-center items-center w-full pb-4">
+    <div class="animate-spin">
+      <Icon icon="la:spinner" width="48" height="48" />
     </div>
   </div>
 {/if}
