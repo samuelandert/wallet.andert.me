@@ -4,14 +4,10 @@ import operations from './wundergraph.operations';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
+import axios from 'axios';
 dotenv.config();
 
 const directusSchema = fs.readFileSync(path.join(path.resolve(), './schemas/directus.graphql'), 'utf8');
-
-const countries = introspect.graphql({
-	apiNamespace: 'countries',
-	url: 'https://countries.trevorblades.com/',
-});
 
 const spaceX = introspect.graphql({
 	apiNamespace: 'spacex',
@@ -28,7 +24,7 @@ const directus = introspect.graphql({
 
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [countries, spaceX, directus],
+	apis: [spaceX, directus],
 	server,
 	operations,
 	generate: {
@@ -65,6 +61,6 @@ configureWunderGraphApplication({
 		},
 	},
 	authorization: {
-		roles: ['admin'],
+		roles: ['owner'],
 	},
 });
