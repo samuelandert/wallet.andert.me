@@ -24,15 +24,16 @@
   let signingConditions = signingConditionsCookie
     ? JSON.parse(signingConditionsCookie)
     : [];
-  console.log("layout signingConditions: ", signingConditions); // Add this line
+  console.log("layout signingConditions: ", signingConditions);
   let correctCondition = signingConditions
     ? signingConditions.find(
         (condition) =>
           condition.resourceId.baseUrl === "https://localhost:3000" &&
-          condition.resourceId.path === "/server/wundergraph"
+          condition.resourceId.path === "/server/wundergraph" &&
+          condition.resourceId.role === "owner"
       )
     : null;
-  console.log("layout correctcondition: ", correctCondition); // Update this line
+  console.log("layout correctcondition: ", correctCondition);
 
   const token = correctCondition ? correctCondition.jwt : null;
 
@@ -58,16 +59,9 @@
   {/if}</Drawer
 >
 
-<div
-  class="grid h-screen bg-center bg-cover grid-rows-layout"
-  style="background-image: url('lake.jpeg');"
->
+<div class="grid h-screen grid-rows-layout bg-color">
   <QueryClientProvider client={data.queryClient}>
-    <div class="w-full h-full p-6 overflow-hidden">
-      <div class="w-full h-full overflow-hidden bg-white rounded-xl">
-        <slot />
-      </div>
-    </div>
+    <slot />
   </QueryClientProvider>
 
   <div class="row-start-2 row-end-3">
@@ -76,6 +70,9 @@
 </div>
 
 <style>
+  .bg-color {
+    background-color: #e6e7e1;
+  }
   .grid-rows-layout {
     grid-template-rows: 1fr auto;
   }

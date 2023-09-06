@@ -13,6 +13,7 @@
   const { state, send } = useMachine(walletMachine);
   const drawerStore = getDrawerStore();
 
+  let search = "";
   $: walletState.set($state.context);
 
   $: {
@@ -73,30 +74,55 @@
       </div>
     </div>
   {:else if $state.context.pkps}
-    <div
-      class="flex flex-col items-center p-3 space-y-4 bg-white bg-opacity-75 rounded-t-lg shadow-md"
-    >
+    <div class="flex flex-col items-center p-3 space-y-4">
       <div class="flex items-center justify-between w-full space-x-4">
-        <div class="flex items-center space-x-2">
-          <div>
-            <p class="text-sm">
-              <span class="font-semibold">Address:</span>
-              {$state.context.pkps[0].ethAddress}
-            </p>
-            <p class="text-xs">
-              <span class="font-semibold">Provider:</span>
-              {$state.context.providerName}
-            </p>
+        <div class="w-full h-full overflow-hidden grid grid-cols-6">
+          <aside class="col-span-1">
+            <div class="flex items-center space-x-2">
+              <Icon
+                icon="iconamoon:profile-circle-fill"
+                class="w-12 h-12 text-gray-500"
+              />
+              <div>
+                <p class="text-sm">
+                  <span class="font-semibold">Address:</span>
+                  {$state.context.pkps[0].ethAddress.substring(0, 8) + "..."}
+                </p>
+                <p class="text-xs">
+                  <span class="font-semibold">Provider:</span>
+                  {$state.context.providerName}
+                </p>
+              </div>
+            </div>
+          </aside>
+          <div class="col-span-5 w-full">
+            <div class="flex justify-end space-x-4">
+              <div class="w-full">
+                <input bind:value={search} class="input" type="text" />
+              </div>
+              <button type="button" class="btn-icon variant-filled-success">
+                <div class="px-4">
+                  <Icon
+                    icon="carbon:send-alt-filled"
+                    class=""
+                    width="24"
+                    height="24"
+                  />
+                </div>
+              </button>
+              <button
+                on:click={signRequestTrigger}
+                type="button"
+                class="btn variant-filled">SignRequest</button
+              >
+              <button
+                type="button"
+                class="btn variant-filled"
+                on:click={clearSession}>Logout</button
+              >
+            </div>
           </div>
         </div>
-        <button
-          on:click={signRequestTrigger}
-          type="button"
-          class="btn variant-filled">SignRequest</button
-        >
-        <button type="button" class="btn variant-filled" on:click={clearSession}
-          >Logout</button
-        >
       </div>
     </div>
   {:else if $state.matches("sessionExpired")}

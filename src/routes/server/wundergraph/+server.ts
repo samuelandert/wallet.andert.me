@@ -29,6 +29,6 @@ export async function GET({ request }) {
         return new Response(JSON.stringify(payload), { status: 200 });
     } catch (err) {
         console.log("JWT error");
-        throw error(401, "JWT payload not machting")
+        throw error(401, "JWT error")
     }
 }

@@ -1,11 +1,14 @@
 <script>
+  import ACCs from "$lib/ACCs.svelte";
   import HeaderMain from "$lib/layouts/HeaderMain.svelte";
 </script>
 
 <HeaderMain>
   <div slot="header">
-    <h1>Dashboard</h1>
+    <h1>Access Control</h1>
   </div>
 
-  <div slot="main">Welcome back, Samuel this is your Dashboard</div>
+  <div slot="main">
+    <ACCs />
+  </div>
 </HeaderMain>
