@@ -4,7 +4,6 @@ import operations from './wundergraph.operations';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import axios from 'axios';
 dotenv.config();
 
 const directusSchema = fs.readFileSync(path.join(path.resolve(), './schemas/directus.graphql'), 'utf8');
