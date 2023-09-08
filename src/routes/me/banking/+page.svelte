@@ -3,6 +3,7 @@
   import { createQuery } from "$lib/wundergraph";
   import Time from "svelte-time";
   import Icon from "@iconify/svelte";
+  import { sendTxWithPKPWallet } from "$lib/services/sendTxWithPKPWallet";
 
   const getBalanceQuery = createQuery({
     operationName: "getBalance",
@@ -20,6 +21,11 @@
 
   function fromWei(wei: BigInt): string {
     return (Number(wei) / 10 ** 18).toFixed(2);
+  }
+  let me = JSON.parse(localStorage.getItem("me"));
+
+  function handleSendTx() {
+    sendTxWithPKPWallet(me.pkps[0], me.sessionSigs);
   }
 </script>
 
@@ -42,6 +48,14 @@
         BALANCE
         <p class="text-5xl">${fromWei($getBalanceQuery.data.balance)}</p>
       {/if}
+    </div>
+    <div class="pb-4">
+      <button
+        class="btn variant-filled-primary flex-grow"
+        on:click={handleSendTx}
+      >
+        SEND $0.10
+      </button>
     </div>
     <div class="pb-4">
       {#if $getTransactionsQuery.isLoading}

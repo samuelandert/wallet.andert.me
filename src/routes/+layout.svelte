@@ -24,7 +24,6 @@
   let signingConditions = signingConditionsCookie
     ? JSON.parse(signingConditionsCookie)
     : [];
-  console.log("layout signingConditions: ", signingConditions);
   let correctCondition = signingConditions
     ? signingConditions.find(
         (condition) =>
@@ -33,7 +32,6 @@
           condition.resourceId.role === "owner"
       )
     : null;
-  console.log("layout correctcondition: ", correctCondition);
 
   const token = correctCondition ? correctCondition.jwt : null;
 
@@ -46,7 +44,6 @@
   });
 
   if (token) {
-    console.log("layout token: ", token); // Update this line
     client.setAuthorizationToken(token);
   }
 </script>

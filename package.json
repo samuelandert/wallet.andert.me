@@ -51,6 +51,7 @@
     "@lit-protocol/lit-auth-client": "^2.2.50",
     "@lit-protocol/lit-node-client": "^2.2.50",
     "@lit-protocol/pkp-client": "^2.2.50",
+    "@lit-protocol/pkp-ethers": "^2.2.54",
     "@lit-protocol/types": "^2.2.50",
     "@tanstack/svelte-query": "^4.29.1",
     "@wagmi/core": "^1.3.9",
