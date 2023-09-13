@@ -5,6 +5,7 @@
       <ul>
         <li><a href="/me">Dashboard</a></li>
         <li><a href="/me/projects">My Projects</a></li>
+        <li><a href="/me/documents">My Documents</a></li>
         <li><a href="/me/banking">Banking</a></li>
         <li><a href="/me/bookmarks">Bookmarks</a></li>
         <li><a href="/me/acc">Access Control</a></li>

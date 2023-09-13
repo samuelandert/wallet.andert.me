@@ -1,0 +1,8 @@
+query {
+  system_db_files {
+    id
+    title
+    type
+    filename_disk
+  }
+}

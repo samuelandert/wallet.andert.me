@@ -22,8 +22,16 @@ export async function fetchSchemas() {
     }
   });
 
+    // Fetch the GraphQL SDL schema
+    const { data: systemSchema } = await axios.get(`${serverUrl}/server/specs/graphql/system`, {
+      headers: {
+        'Authorization': process.env.DIRECTUS
+      }
+    });
+
   // Save the schema to a file
   fs.writeFileSync('./.wundergraph/schemas/directus.graphql', schema);
+  fs.writeFileSync('./.wundergraph/schemas/directus_system.graphql', systemSchema);
 }
 
 fetchSchemas().catch(console.error);

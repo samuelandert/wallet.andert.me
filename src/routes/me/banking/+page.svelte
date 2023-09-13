@@ -5,24 +5,25 @@
   import Icon from "@iconify/svelte";
   import { sendTxWithPKPWallet } from "$lib/services/sendTxWithPKPWallet";
 
+  let me = JSON.parse(localStorage.getItem("me"));
+
   const getBalanceQuery = createQuery({
     operationName: "getBalance",
     input: {
-      address: "0x4b975F10baf1153A5CC688B52d55809cd2d8BB57",
+      address: me.pkps[0].ethAddress,
     },
   });
 
   const getTransactionsQuery = createQuery({
     operationName: "getTransactions",
     input: {
-      address: "0x4b975F10baf1153A5CC688B52d55809cd2d8BB57",
+      address: me.pkps[0].ethAddress,
     },
   });
 
   function fromWei(wei: BigInt): string {
     return (Number(wei) / 10 ** 18).toFixed(2);
   }
-  let me = JSON.parse(localStorage.getItem("me"));
 
   function handleSendTx() {
     sendTxWithPKPWallet(me.pkps[0], me.sessionSigs);
@@ -37,7 +38,7 @@
   <div slot="main">
     <div class="pb-4">
       ACCOUNT
-      <p class="text-2xl">0x4b975F10baf1153A5CC688B52d55809cd2d8BB57</p>
+      <p class="text-2xl">{me.pkps[0].ethAddress}</p>
     </div>
     <div class="pb-4">
       {#if $getBalanceQuery.isLoading}

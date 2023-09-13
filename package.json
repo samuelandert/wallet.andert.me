@@ -68,6 +68,7 @@
     "jwks-rsa": "^3.0.1",
     "node-jose": "^2.2.0",
     "path": "^0.12.7",
+    "sqlite3": "^5.1.6",
     "svelte-kit-cookie-session": "^4.0.0",
     "url": "^0.11.1",
     "xstate": "^4.38.2"

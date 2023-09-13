@@ -20,7 +20,7 @@
         {:else if $bookmarksQuery.error}
           <pre>Error: {JSON.stringify($bookmarksQuery.error, null, 2)}</pre>
         {:else}
-          {#each $bookmarksQuery.data.directus_bookmarks as bookmark (bookmark.id)}
+          {#each $bookmarksQuery.data.db_bookmarks as bookmark (bookmark.id)}
             <a href={bookmark.url} class="text-blue-500 hover:underline">
               {bookmark.name}
             </a>

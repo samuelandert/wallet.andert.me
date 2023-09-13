@@ -7,23 +7,32 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const directusSchema = fs.readFileSync(path.join(path.resolve(), './schemas/directus.graphql'), 'utf8');
+const directusSystemSchema = fs.readFileSync(path.join(path.resolve(), './schemas/directus_system.graphql'), 'utf8');
 
 const spaceX = introspect.graphql({
 	apiNamespace: 'spacex',
 	url: 'https://spacex-api.fly.dev/graphql/',
 });
 
-const directus = introspect.graphql({
-	apiNamespace: 'directus',
+const db = introspect.graphql({
+	apiNamespace: 'db',
 	loadSchemaFromString: directusSchema,
 	url: 'https://directus.andert.me/graphql',
 	headers: (builder) => builder
 		.addStaticHeader('Authorization', new EnvironmentVariable('DIRECTUS', process.env.DIRECTUS))
 });
 
+const system_db = introspect.graphql({
+	apiNamespace: 'system_db',
+	loadSchemaFromString: directusSystemSchema,
+	url: 'https://directus.andert.me/graphql/system',
+	headers: (builder) => builder
+		.addStaticHeader('Authorization', new EnvironmentVariable('DIRECTUS', process.env.DIRECTUS))
+});
+
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [spaceX, directus],
+	apis: [spaceX, db, system_db],
 	server,
 	operations,
 	generate: {

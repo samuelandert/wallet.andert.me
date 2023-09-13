@@ -1,5 +1,5 @@
-query Bookmarks {
-  directus_bookmarks {
+query {
+  db_bookmarks {
     id
     name
     url

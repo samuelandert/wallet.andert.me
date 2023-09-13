@@ -1,5 +1,5 @@
-query Todos {
-  directus_todos {
+query {
+  db_todos {
     id
     task
     user_created {

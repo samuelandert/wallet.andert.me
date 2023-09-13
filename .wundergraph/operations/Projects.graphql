@@ -1,5 +1,5 @@
-query Projects {
-  directus_projects {
+query {
+  db_projects {
     id
     text
   }
