@@ -6,15 +6,15 @@ export default createOperation.query({
     address: z.string(),
   }),
   handler: async ({ input }) => {
-    console.log('Making request with input:', input); // Log the input
+    console.log('Making request with input:', input);
 
     const { data } = await axios.get('https://api.gnosisscan.io/api', {
       params: {
         module: 'account',
         action: 'balance',
         address: input.address,
-        // tag: 'latest',
-        // apikey: process.env.GNOSISSCAN_API,
+        tag: 'latest',
+        apikey: process.env.GNOSISSCAN_API,
       },
       timeout: 10000,
     });

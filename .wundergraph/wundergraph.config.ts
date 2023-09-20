@@ -26,16 +26,6 @@ const placeholder = introspect.openApiV2({
 	baseURL: 'https://jsonplaceholder.typicode.com',
 });
 
-const cloudron = introspect.openApiV2({
-	apiNamespace: 'cloudron',
-	source: {
-		kind: "file",
-		filePath: "./schemas/cloudron.json"
-	},
-	headers: (builder) => builder
-		.addStaticHeader('Authorization', new EnvironmentVariable('CLOUDRON_API', process.env.CLOUDRON_API))
-});
-
 const system_db = introspect.graphql({
 	apiNamespace: 'system_db',
 	loadSchemaFromString: directusSystemSchema,
@@ -46,7 +36,7 @@ const system_db = introspect.graphql({
 
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [db, system_db, placeholder, cloudron],
+	apis: [db, system_db, placeholder],
 	server,
 	operations,
 	generate: {
