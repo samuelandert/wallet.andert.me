@@ -9,17 +9,31 @@ dotenv.config();
 const directusSchema = fs.readFileSync(path.join(path.resolve(), './schemas/directus.graphql'), 'utf8');
 const directusSystemSchema = fs.readFileSync(path.join(path.resolve(), './schemas/directus_system.graphql'), 'utf8');
 
-const spaceX = introspect.graphql({
-	apiNamespace: 'spacex',
-	url: 'https://spacex-api.fly.dev/graphql/',
-});
-
 const db = introspect.graphql({
 	apiNamespace: 'db',
 	loadSchemaFromString: directusSchema,
 	url: 'https://directus.andert.me/graphql',
 	headers: (builder) => builder
 		.addStaticHeader('Authorization', new EnvironmentVariable('DIRECTUS', process.env.DIRECTUS))
+});
+
+const placeholder = introspect.openApiV2({
+	apiNamespace: 'placeholder',
+	source: {
+		kind: "file",
+		filePath: "./schemas/placeholder.json"
+	},
+	baseURL: 'https://jsonplaceholder.typicode.com',
+});
+
+const cloudron = introspect.openApiV2({
+	apiNamespace: 'cloudron',
+	source: {
+		kind: "file",
+		filePath: "./schemas/cloudron.json"
+	},
+	headers: (builder) => builder
+		.addStaticHeader('Authorization', new EnvironmentVariable('CLOUDRON_API', process.env.CLOUDRON_API))
 });
 
 const system_db = introspect.graphql({
@@ -32,7 +46,7 @@ const system_db = introspect.graphql({
 
 // configureWunderGraph emits the configuration
 configureWunderGraphApplication({
-	apis: [spaceX, db, system_db],
+	apis: [db, system_db, placeholder, cloudron],
 	server,
 	operations,
 	generate: {

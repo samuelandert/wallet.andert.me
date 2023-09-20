@@ -1,0 +1,5195 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cloudron API",
+    "version": "1.0.0",
+    "contact": {
+      "url": "https://forum.cloudron.io"
+    },
+    "x-logo": {
+      "url": "/img/cloudron-banner.png"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "description": "# Introduction\n\nCloudron provides a RESTful API to manage apps, users, groups, domains and other resources.\n\nAll of the functionality in the Cloudron Dashboard is available through the API, allowing you to script complex actions.\n\nIf you are an app developer, the [Cloudron CLI tool](https://www.npmjs.com/package/cloudron) implements a workflow that allows\nyou to develop apps on your Cloudron. The CLI tool uses the REST API documented here.\n\n## Requests\n\nThe API follows standard HTTP REST API conventions.\n\n|Method|Usage|\n|--- |--- |\n|GET| Retrieveal operations |\n|DELETE| Destroys a resource |\n|POST| Create new objects or start a new task. Also used to update parts of a resource |\n|PUT| Idempotent operation that replaces a resource |\n|PATCH| API does not support PATCH |\n|HEAD| Read response headers and get no response |\n\n## HTTP Statuses\n\nThe API follows standard HTTP REST API response conventions.\n\n2xx responses indicate success. 4xx responses indicate request errors. 5xx responses indicate server errors.\n\n|Name|Description|\n|--- |--- |\n|200 | Success. Operation succeeded, response body contains more information |\n|204 | Success. Operation succeeded, empty response body |\n|401 | Access Denied. Unauthorized API call|\n|403 | Forbidden. Authorized but operation not permitted |\n|5xx | Internal Server error |\n\n## Pagination\n\nWhen listing objects, query parameters `page` and `per_page` can be passed in. Note that these parameters have index\nstarting from 1.\n\n## API Token\n\nTo use the REST API, you must first create an [API token](https://docs.cloudron.io/profile/#api-tokens). This token can be provided\nin two ways:\n  * Via the request query parameter `?access_token=<token>`\n  * Via the Authorization header `Bearer <token>`\n\nAPI Tokens can be create as `Readonly` or `Read and Write`. With `Readonly` token only GET operations can be performed.\n\n## cURL Examples\n\nWe use `curl` to demonstrate how to use the API. The Cloudron Dashboard Domain and the API Token are variable fields.\nYou can export them in your shell as follows:\n\n```\nexport CLOUDRON_DOMAIN=my.domain.com\nexport CLOUDRON_TOKEN=your_token_here\n```\n\nTo list the domains using cURL and the `Authorization` header:\n\n```\n  curl -H 'ContentType: application/json' -H 'Authorization: Bearer $CLOUDRON_TOKEN' https://$CLOUDRON_DOMAIN/api/v1/domains\n```\n\nAlternately, to use the query parameter:\n\n```\n  curl -H 'ContentType: application/json' 'https://$CLOUDRON_DOMAIN/api/v1/domains?access_token=$CLOUDRON_TOKEN'\n```\n\n# Authorization\n\n<!-- Redoc-Inject: <security-definitions> -->\n"
+  },
+  "servers": [
+    {
+      "url": "https://my.andert.me/api/v1",
+      "description": "Cloudron API",
+      "variables": {
+        "cloudron_domain": {
+          "default": "my.andert.me",
+          "description": "The Cloudron Dashboard Domain"
+        }
+      }
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer_auth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "To use the Bearer Authentication, you must first create an [API token](https://docs.cloudron.io/profile/#api-tokens).\nThe API Token can be passed via the Authorization header `Bearer <token>`:\n```\n  curl -H 'ContentType: application/json' -H 'Authorization: Bearer $CLOUDRON_TOKEN' https://$CLOUDRON_DOMAIN/api/v1/domains\n```\n"
+      },
+      "query_auth": {
+        "type": "apiKey",
+        "name": "access_token",
+        "in": "query",
+        "description": "To use the Query Parameter Authentication, you must first create an [API token](https://docs.cloudron.io/profile/#api-tokens).\nThe API Token can be passed via the  `access_token` query parameter:\n```\n  curl -H 'ContentType: application/json' 'https://$CLOUDRON_DOMAIN/api/v1/domains?access_token=$CLOUDRON_TOKEN'\n```\n"
+      }
+    },
+    "parameters": {
+      "PaginationPage": {
+        "name": "page",
+        "in": "query",
+        "description": "Page number",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "PaginationPerPage": {
+        "name": "per_page",
+        "in": "query",
+        "description": "Items per page",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 25
+        }
+      },
+      "passwordId": {
+        "name": "passwordId",
+        "in": "path",
+        "description": "App Password Id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "eventId": {
+        "name": "eventId",
+        "in": "path",
+        "description": "Event Id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "notificationId": {
+        "name": "notificationId",
+        "in": "path",
+        "description": "Notification Id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "userId": {
+        "name": "userId",
+        "in": "path",
+        "description": "User Id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "taskId": {
+        "name": "taskId",
+        "in": "path",
+        "description": "Task Id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "logsLines": {
+        "name": "lines",
+        "in": "query",
+        "description": "Number of lines in the log",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "default": 10
+        }
+      },
+      "logsFormat": {
+        "name": "format",
+        "in": "query",
+        "description": "Format of the lines in the log file",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "default": "json",
+          "enum": [
+            "json",
+            "short"
+          ]
+        }
+      },
+      "tokenId": {
+        "name": "tokenId",
+        "in": "path",
+        "description": "Token Id",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "AppPassword": {
+        "description": "App Password",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "App Password Id",
+            "example": "uid-1bf6f7a0-c909-41f5-96a1-68183a6edd8b"
+          },
+          "name": {
+            "type": "string",
+            "description": "A label/display name for the the password",
+            "example": "Password For Nextcloud mobile app"
+          },
+          "userId": {
+            "type": "string",
+            "description": "The userId that this password will authenticate",
+            "example": "uid-743e4cee-448e-4f82-b880-8a530265b1e5"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "The application that this password will authenticate. This can be an app id or `mail`",
+            "example": "743e4cee-448e-4f82-b880-8a530265b1e5"
+          },
+          "creationTime": {
+            "type": "string",
+            "description": "Time when notification was created",
+            "example": "2022-03-05T02:30:00.000Z"
+          }
+        }
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "A short identifier corresponding to the HTTP status code returned. For  example, the ID for a response returning a 401 status code would be \"Unauthorized\".",
+            "type": "string",
+            "example": "HTTP Status Message"
+          },
+          "message": {
+            "description": "A message providing additional information about the error, including  details to help resolve it when possible.",
+            "type": "string",
+            "example": "Something bad happenned"
+          }
+        },
+        "required": [
+          "status",
+          "message"
+        ]
+      },
+      "name": {
+        "type": "string",
+        "description": "A label/display name for the the password",
+        "example": "Password For Nextcloud mobile app"
+      },
+      "identifier": {
+        "type": "string",
+        "description": "The application that this password will authenticate. This can be an app id or `mail`",
+        "example": "743e4cee-448e-4f82-b880-8a530265b1e5"
+      },
+      "id": {
+        "type": "string",
+        "description": "App Password Id",
+        "example": "uid-1bf6f7a0-c909-41f5-96a1-68183a6edd8b"
+      },
+      "no_content": {
+        "type": "object"
+      },
+      "Footer": {
+        "type": "string",
+        "description": "The footer is a markdown string. It can be templated with the following variables:\n  * `%YEAR%` - the current year\n  * `%VERSION%` - current Cloudron version\n",
+        "example": "All Rights Reserved (c) 2010-%YEAR%"
+      },
+      "IpEntries": {
+        "description": "Newline separated list of IP entries. Each entry is an IP address or an IP address range in CIDR notation. Lines starting with `#` are treated as comments.\n",
+        "type": "string",
+        "example": "# This is a IPv4 range\n5.75.0.0/16\n# This is an IPv6 address\n2604:a880:1:4a::2:7000"
+      },
+      "DirectoryServerConfig": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "If Directory Server is enabled",
+            "example": true
+          },
+          "secret": {
+            "type": "string",
+            "description": "Password for authenticating with the Directory Server",
+            "example": true
+          },
+          "allowlist": {
+            "$ref": "#/components/schemas/IpEntries"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      },
+      "RegistryConfig": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Docker Registry Provider",
+            "enum": [
+              "aws",
+              "digitalocean",
+              "dockerhub",
+              "google-cloud",
+              "linode",
+              "quay",
+              "treescale",
+              "other",
+              "noop"
+            ],
+            "example": "digitalocean"
+          },
+          "serverAddress": {
+            "type": "string",
+            "description": "Address of the Docker Registry",
+            "example": "docker.io"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username for authenticating with the Docker Registry"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email for authenticating with the Docker Registry"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for authenticating with the Docker Registry"
+          }
+        },
+        "required": [
+          "provider"
+        ]
+      },
+      "action": {
+        "type": "string",
+        "description": "Name of an action",
+        "enum": [
+          "app.clone",
+          "app.configure",
+          "app.repair",
+          "app.install",
+          "app.restore",
+          "app.import",
+          "app.uninstall",
+          "app.update",
+          "app.update.finish",
+          "app.backup",
+          "app.backup.finish",
+          "app.login",
+          "app.oom",
+          "app.up",
+          "app.down",
+          "app.start",
+          "app.stop",
+          "app.restart",
+          "backup.finish",
+          "backup.start",
+          "backup.cleanup.finish",
+          "certificate.new",
+          "certificate.cleanup",
+          "cloudron.activate",
+          "cloudron.provision",
+          "cloudron.install.finish",
+          "cloudron.start",
+          "dashboard.domain.update",
+          "domain.add",
+          "domain.update",
+          "domain.remove",
+          "dyndns.update",
+          "mail.location",
+          "mail.enabled",
+          "mail.disabled",
+          "mail.box.add",
+          "mail.box.remove",
+          "mail.box.update",
+          "mail.list.add",
+          "mail.list.remove",
+          "mail.list.update",
+          "service.configure",
+          "service.rebuild",
+          "service.restart",
+          "cloudron.update",
+          "cloudron.update.finish",
+          "user.add",
+          "user.login",
+          "user.login.ghost",
+          "user.logout",
+          "user.remove",
+          "user.update",
+          "volume.add",
+          "volume.update",
+          "volume.remount",
+          "volume.remove",
+          "support.ticket",
+          "support.ssh"
+        ],
+        "example": "volume.add"
+      },
+      "Event": {
+        "description": "Event",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Event Id",
+            "example": "7f32f714-ad40-4bea-b5e5-e71562679f0c"
+          },
+          "action": {
+            "type": "string",
+            "description": "Name of an action",
+            "enum": [
+              "app.clone",
+              "app.configure",
+              "app.repair",
+              "app.install",
+              "app.restore",
+              "app.import",
+              "app.uninstall",
+              "app.update",
+              "app.update.finish",
+              "app.backup",
+              "app.backup.finish",
+              "app.login",
+              "app.oom",
+              "app.up",
+              "app.down",
+              "app.start",
+              "app.stop",
+              "app.restart",
+              "backup.finish",
+              "backup.start",
+              "backup.cleanup.finish",
+              "certificate.new",
+              "certificate.cleanup",
+              "cloudron.activate",
+              "cloudron.provision",
+              "cloudron.install.finish",
+              "cloudron.start",
+              "dashboard.domain.update",
+              "domain.add",
+              "domain.update",
+              "domain.remove",
+              "dyndns.update",
+              "mail.location",
+              "mail.enabled",
+              "mail.disabled",
+              "mail.box.add",
+              "mail.box.remove",
+              "mail.box.update",
+              "mail.list.add",
+              "mail.list.remove",
+              "mail.list.update",
+              "service.configure",
+              "service.rebuild",
+              "service.restart",
+              "cloudron.update",
+              "cloudron.update.finish",
+              "user.add",
+              "user.login",
+              "user.login.ghost",
+              "user.logout",
+              "user.remove",
+              "user.update",
+              "volume.add",
+              "volume.update",
+              "volume.remount",
+              "volume.remove",
+              "support.ticket",
+              "support.ssh"
+            ],
+            "example": "volume.add"
+          },
+          "creationTime": {
+            "type": "string",
+            "description": "Time when event happenned",
+            "example": "2022-03-05T02:30:00.000Z"
+          },
+          "source": {
+            "type": "object",
+            "description": "Source of the event"
+          },
+          "data": {
+            "type": "object",
+            "description": "Additional data about the event"
+          }
+        }
+      },
+      "ExternalLdapConfig": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "External LDAP Provider",
+            "enum": [
+              "ad",
+              "cloudron",
+              "jumpcloud",
+              "okta",
+              "univention",
+              "other",
+              "noop"
+            ],
+            "example": "jumpcloud"
+          },
+          "url": {
+            "type": "string",
+            "description": "Address of the Docker Registry",
+            "example": "docker.io"
+          },
+          "baseDn": {
+            "type": "string",
+            "description": "Base DN for users"
+          },
+          "usernameField": {
+            "type": "string",
+            "description": "LDAP Field to use as the username"
+          },
+          "filter": {
+            "type": "string",
+            "description": "LDAP Filter to use for filtering users"
+          },
+          "groupBaseDn": {
+            "type": "string",
+            "description": "Base DN for groups"
+          },
+          "bindDn": {
+            "type": "string",
+            "description": "LDAP authentication username"
+          },
+          "bindPassword": {
+            "type": "string",
+            "description": "LDAP authentication password"
+          }
+        },
+        "required": [
+          "provider"
+        ]
+      },
+      "task_info": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "integer",
+            "description": "Use the task id to track the status of the task using the Task API",
+            "example": 295
+          }
+        }
+      },
+      "IPConfigProviderOnly": {
+        "required": [
+          "provider"
+        ],
+        "type": "object",
+        "description": "Specifies the IPConfig provider",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "The provider type determines how IP address is determined for use in IPv4 (A) or IPv6 (AAAA) records Sort order:\n  * `noop` - Disable setting DNS record\n  * `fixed` - Use static IP for DNS records\n  * `interface` - Use the IP address attached to the interface for DNS records\n  * `generic` - Automatically detect public IP by calling `cloudron.io`\n",
+            "enum": [
+              "noop",
+              "fixed",
+              "interface",
+              "generic"
+            ],
+            "example": "generic"
+          }
+        }
+      },
+      "FixedProvider": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/IPConfigProviderOnly"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "ip": {
+                "type": "string",
+                "description": "A fixed IPv4 or IPv6 Address",
+                "example": "3.4.6.7"
+              }
+            }
+          }
+        ]
+      },
+      "NetworkInterfaceProvider": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/IPConfigProviderOnly"
+          },
+          {
+            "type": "object",
+            "description": "Disables setting of IPv4 or IPv6 DNS records",
+            "properties": {
+              "iface": {
+                "type": "string",
+                "description": "Interface name",
+                "example": "eth1"
+              }
+            }
+          }
+        ]
+      },
+      "IPConfig": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "provider",
+          "mapping": {
+            "noop": "#/components/schemas/IPConfigProviderOnly",
+            "fixed": "#/components/schemas/FixedProvider",
+            "network-interface": "#/components/schemas/NetworkInterfaceProvider",
+            "generic": "#/components/schemas/IPConfigProviderOnly"
+          }
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/IPConfigProviderOnly"
+          },
+          {
+            "$ref": "#/components/schemas/FixedProvider"
+          },
+          {
+            "$ref": "#/components/schemas/NetworkInterfaceProvider"
+          }
+        ]
+      },
+      "Notification": {
+        "description": "Notification",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Notification Id",
+            "example": "50"
+          },
+          "eventId": {
+            "type": "string",
+            "description": "EventId from Eventlog",
+            "example": "051ceb23-5003-4b03-b46e-521611b02a1c"
+          },
+          "title": {
+            "type": "string",
+            "description": "Subject of the notification",
+            "example": "Reboot Required"
+          },
+          "message": {
+            "type": "string",
+            "description": "Notification message in markdown format",
+            "example": "To finish ubuntu security updates, a reboot is necessary."
+          },
+          "creationTime": {
+            "type": "string",
+            "description": "Time when notification was created",
+            "example": "2022-03-05T02:30:00.000Z"
+          },
+          "acknowledged": {
+            "type": "boolean",
+            "description": "Whether notification was acknowledged by user or not",
+            "example": false
+          }
+        }
+      },
+      "Profile": {
+        "type": "object",
+        "description": "The user's profile",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique user id",
+            "readOnly": true
+          },
+          "username": {
+            "type": "string",
+            "description": "Unique username",
+            "readOnly": true,
+            "example": "messi"
+          },
+          "email": {
+            "type": "string",
+            "description": "Unique email address",
+            "example": "goat@football.com"
+          },
+          "fallbackEmail": {
+            "type": "string",
+            "description": "Unique fallback email address. This is the address password reset is sent to. This requires the `password` field to be set to the user's current password.\n",
+            "example": "goat@soccer.com"
+          },
+          "password": {
+            "type": "string",
+            "description": "When trying to change the `fallbackEmail`, set this field to the user's current password",
+            "writeOnly": true
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Full name of the user",
+            "example": "Lionel Messi"
+          },
+          "twoFactorAuthenticationEnabled": {
+            "type": "boolean",
+            "description": "Whether user has enabled 2FA",
+            "readOnly": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "admin",
+              "usermanager",
+              "mailmanager",
+              "user"
+            ],
+            "description": "User's role determines the resources they have access to",
+            "readOnly": true
+          },
+          "hasBackgroundImage": {
+            "type": "boolean",
+            "description": "Whether user has a custom dashboard background image",
+            "readOnly": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "URL to user's avatar (icon) . This can be:\n  * Empty string - if user has no icon set\n  * Gravatar URL - external URL if user chose Gravatar\n  * Custom Avatar URL - a link to the [custom avatar](#operation/getCustomAvatar) endpoint\n",
+            "readOnly": true
+          },
+          "source": {
+            "type": "string",
+            "description": "Authentication source",
+            "example": "ldap",
+            "readOnly": true
+          }
+        }
+      },
+      "type": {
+        "type": "string",
+        "description": "Type of task",
+        "enum": [
+          "app",
+          "backup",
+          "update",
+          "checkCerts",
+          "syncDyndns",
+          "prepareDashboardLocation",
+          "cleanBackups",
+          "syncExternalLdap",
+          "changeMailLocation",
+          "syncDnsRecords",
+          "updateDiskUsage"
+        ],
+        "example": "cleanBackups"
+      },
+      "Task": {
+        "description": "Task",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Task Id",
+            "example": "364"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of task",
+            "enum": [
+              "app",
+              "backup",
+              "update",
+              "checkCerts",
+              "syncDyndns",
+              "prepareDashboardLocation",
+              "cleanBackups",
+              "syncExternalLdap",
+              "changeMailLocation",
+              "syncDnsRecords",
+              "updateDiskUsage"
+            ],
+            "example": "cleanBackups"
+          },
+          "percent": {
+            "type": "integer",
+            "description": "Task progress",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "message": {
+            "type": "string",
+            "description": "Progress message",
+            "example": "Checking expired certs for removal"
+          },
+          "error": {
+            "type": "object",
+            "description": "If the task errored, this contains the error",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "code": {
+                "type": "integer",
+                "description": "Error code. Possible codes are `stopped`, `crashed` & `timeout`"
+              }
+            }
+          },
+          "active": {
+            "type": "boolean",
+            "description": "If the task is currently running"
+          },
+          "pending": {
+            "type": "boolean",
+            "description": "If the task is scheduled to run"
+          },
+          "creationTime": {
+            "type": "string",
+            "description": "Time when task was created",
+            "example": "2023-09-07T13:18:35.000Z"
+          },
+          "result": {
+            "type": "object",
+            "description": "Result of the task. The fields depends on the type type"
+          },
+          "ts": {
+            "type": "string",
+            "description": "Time when task was last updated",
+            "example": "2023-09-07T13:18:35.000Z"
+          },
+          "success": {
+            "type": "boolean",
+            "description": "If the task succeeded. If it succeeded, the `result` contains the result. Otherwise, `error` contains the error message"
+          }
+        }
+      },
+      "LogStreamSSE": {
+        "description": "[Server Side Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) compatible event stream\n",
+        "type": "array",
+        "format": "event-stream",
+        "items": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "realtimeTimestamp": {
+                      "type": "number"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "Token": {
+        "description": "Token",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Token Id",
+            "example": "tid-f3694710-ec08-4352-b8bc-b094ae40a0f4"
+          },
+          "name": {
+            "type": "string",
+            "description": "A label/display name for the the token",
+            "example": "Token For Automation"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "The access token that can be used for authentication",
+            "example": "yeRpaRKtJwYJMglFAouYmpoRuN8syAmWXW75ca57AdO"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "Owner of the token. Typically the user id",
+            "example": "uid-743e4cee-448e-4f82-b880-8a530265b1e5"
+          },
+          "clientId": {
+            "type": "string",
+            "description": "Client ID for whom the token has been issued",
+            "example": "cid-sdk"
+          },
+          "expires": {
+            "type": "integer",
+            "description": "Time (epoch) when the token expires",
+            "example": 1725615073184
+          },
+          "lastUsedAt": {
+            "type": "string",
+            "description": "Time when token was last used",
+            "example": "2023-09-07T13:18:35.000Z"
+          },
+          "scope": {
+            "type": "object",
+            "description": "Token permissions. This is a map of routes with r (read) or rw (read write) permission",
+            "example": {
+              "*": "rw"
+            }
+          }
+        }
+      },
+      "properties-name": {
+        "type": "string",
+        "description": "A label/display name for the the token",
+        "example": "Token For Automation"
+      },
+      "expires": {
+        "type": "integer",
+        "description": "Time (epoch) when the token expires",
+        "example": 1725615073184
+      },
+      "scope": {
+        "type": "object",
+        "description": "Token permissions. This is a map of routes with r (read) or rw (read write) permission",
+        "example": {
+          "*": "rw"
+        }
+      },
+      "BoxUpdateInfo": {
+        "type": "object",
+        "description": "Cloudron Update Information",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "The SemVer Version of the next Cloudron release"
+          },
+          "changelog": {
+            "type": "array",
+            "description": "Array of change log lines",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourceTarballUrl": {
+            "type": "string",
+            "description": "URL to download release tarball"
+          },
+          "sourceTarballSigUrl": {
+            "type": "string",
+            "description": "URL to download release tarball signature. The GPG public key is stored in `src/releases.gpg` of Cloudron git repo."
+          },
+          "boxVersionsUrl": {
+            "type": "string",
+            "description": "URL to download release versions file"
+          },
+          "boxVersionsSigUrl": {
+            "type": "string",
+            "description": "URL to download release versions file signature. The GPG public key is stored in `src/releases.gpg` of Cloudron git repo."
+          },
+          "unstable": {
+            "type": "boolean",
+            "description": "Whether this release is considered stable or not"
+          }
+        }
+      },
+      "AppUpdateInfo": {
+        "type": "object",
+        "description": "App Update Information",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The App Store Id",
+            "example": "org.wordpress.cloudronapp"
+          },
+          "creationDate": {
+            "type": "string",
+            "description": "Date when this app version was created",
+            "example": "2023-08-30T11:33:42.000Z"
+          },
+          "publishState": {
+            "type": "string",
+            "description": "Approval status of the app. Usually `approved`."
+          },
+          "ownerId": {
+            "type": "string",
+            "description": "Cloudron.io account owner id"
+          },
+          "manifest": {
+            "type": "object",
+            "description": "Cloudron [App Manifest](https://docs.cloudron.io/packaging/manifest/)"
+          },
+          "iconUrl": {
+            "type": "string",
+            "description": "URL to download the app icon for this version"
+          },
+          "unstable": {
+            "type": "boolean",
+            "description": "Whether this release is considered stable or not"
+          }
+        }
+      },
+      "UpdateInfo": {
+        "type": "object",
+        "description": "Update Information",
+        "properties": {
+          "box": {
+            "$ref": "#/components/schemas/BoxUpdateInfo"
+          }
+        },
+        "additionalProperties": {
+          "x-additionalPropertiesName": "appId",
+          "$ref": "#/components/schemas/AppUpdateInfo"
+        }
+      },
+      "CronPattern": {
+        "type": "string",
+        "description": "Automatic update pattern in [cron](https://crontab.guru/) format.\n",
+        "example": "00 00 1,3,5,23 * * *"
+      },
+      "ProfileConfig": {
+        "type": "object",
+        "properties": {
+          "lockUserProfiles": {
+            "type": "boolean",
+            "description": "If profile changes by users is disabled",
+            "example": true
+          },
+          "mandatory2FA": {
+            "type": "boolean",
+            "description": "If two factor authentication for all users is enforced",
+            "example": true
+          }
+        },
+        "required": [
+          "lockUserProfiles",
+          "mandatory2FA"
+        ]
+      }
+    },
+    "responses": {
+      "unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "forbidden": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "server_error": {
+        "description": "Server error.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "not_found": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "no_content": {
+        "description": "No Content",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/no_content"
+            }
+          }
+        }
+      },
+      "bad_field": {
+        "description": "Bad Field",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "task_started": {
+        "description": "Accepted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/task_info"
+            }
+          }
+        }
+      },
+      "conflict": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "precondition_failed": {
+        "description": "Precondition Failed",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "failed_dependency": {
+        "description": "Failed Dependency",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      },
+      "unprocessable_entity": {
+        "description": "Unprocessable Entity",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer_auth": []
+    },
+    {
+      "query_auth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "App Passwords",
+      "description": "App passwords can be used as a security measure in desktop, email & mobile clients. For example, if you are trying out a new mobile app from an untrusted vendor, you can generate a temporary password that provides access to a specific app. This way your main password does not get compromised (and thus providing access to other apps as well).\n"
+    },
+    {
+      "name": "Branding",
+      "description": "The Branding configuration can be used to customize various aspects of the Cloudron like it's name, logo and footer."
+    },
+    {
+      "name": "Cloudron",
+      "description": "Cloudron Healthcheck route and various global configuration like language & timezone can be found here."
+    },
+    {
+      "name": "Docker",
+      "description": "Docker related configuration."
+    },
+    {
+      "name": "Directory Server",
+      "description": "Directory Server Configuration"
+    },
+    {
+      "name": "Eventlog",
+      "description": "Cloudron server activity can be monitored using the Eventlog API."
+    },
+    {
+      "name": "External LDAP",
+      "description": "The External Directory connector allows users from your existing LDAP or active directory to authenticate with Cloudron."
+    },
+    {
+      "name": "Network",
+      "description": "Networking and Firewall related configuration."
+    },
+    {
+      "name": "Notifications",
+      "description": "Cloudron displays notifications in the dashboard for various events like: app down, app out of memory, low disk space, updates available, app update etc. The notifications can be read by clicking on the bell icon in the navigation bar.\n"
+    },
+    {
+      "name": "Profile",
+      "description": "User's profile information"
+    },
+    {
+      "name": "Reverse Proxy",
+      "description": "The Reverse Proxy manages the nginx config and TLS certificates."
+    },
+    {
+      "name": "System",
+      "description": "Server related information."
+    },
+    {
+      "name": "Tasks",
+      "description": "Tasks are asynchronous operations performed in the background. Each task can be monitored separately using the task id."
+    },
+    {
+      "name": "Tokens",
+      "description": "Tokens are used for API authentication."
+    },
+    {
+      "name": "Updater",
+      "description": "Updater checks and manages updates of the apps and the platform."
+    },
+    {
+      "name": "User Directory",
+      "description": "Users & Groups Configuration"
+    }
+  ],
+  "paths": {
+    "/app_passwords": {
+      "get": {
+        "operationId": "getAppPasswords",
+        "summary": "List App Passwords",
+        "description": "List the App Passwords. App Passwords are personal for a user.",
+        "tags": [
+          "App Passwords"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaginationPage"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationPerPage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "appPasswords": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AppPassword"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/app_passwords\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createAppPassword",
+        "summary": "Create App Password",
+        "description": "Create an App Password",
+        "tags": [
+          "App Passwords"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "$ref": "#/components/schemas/name"
+                  },
+                  "identifier": {
+                    "$ref": "#/components/schemas/identifier"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "#/components/schemas/id"
+                    },
+                    "password": {
+                      "type": "string",
+                      "description": "The app password will not be returned in API responses again",
+                      "example": "01e536bbd289619f"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/app_passwords\" --data '{\"name\":\"NC Mobile App\", \"identifier\": \"114c0b44-6cdd-494d-88a0-0d961006e724\"}'"
+          }
+        ]
+      }
+    },
+    "/app_passwords/{passwordId}": {
+      "get": {
+        "operationId": "getAppPassword",
+        "summary": "Get App Password",
+        "description": "Get App Password by ID",
+        "tags": [
+          "App Passwords"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/passwordId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppPassword"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/app_passwords/$PASSWORD_ID\""
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteAppPassword",
+        "summary": "Delete App Password",
+        "description": "Deletes the App Password. All future requests using this password will instantly fail.",
+        "tags": [
+          "App Passwords"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/passwordId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X DELETE -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/app_passwords/$PASSWORD_ID\""
+          }
+        ]
+      }
+    },
+    "/branding/cloudron_avatar": {
+      "get": {
+        "operationId": "getCloudronAvatar",
+        "summary": "Get Cloudron Avatar (icon)",
+        "description": "Get the Cloudron Avatar. The Cloudron avatar (icon) is used in Email templates, Dashboard header and the Login pages.",
+        "tags": [
+          "Branding"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/branding/cloudron_avatar\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setCloudronAvatar",
+        "summary": "Set Cloudron Avatar (icon)",
+        "description": "Set the Cloudron Avatar. The Cloudron avatar (icon) is used in Email templates, Dashboard header and the Login pages.",
+        "tags": [
+          "Branding"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "avatar"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/branding/cloudron_name\" --form avatar=@localfilename.png"
+          }
+        ]
+      }
+    },
+    "/branding/cloudron_name": {
+      "get": {
+        "operationId": "getCloudronName",
+        "summary": "Get Cloudron Name",
+        "description": "Get the Cloudron Name. The Cloudron name is used in Email templates, Dashboard header and the Login pages.",
+        "tags": [
+          "Branding"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/branding/cloudron_name\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setCloudronName",
+        "summary": "Set Cloudron Name",
+        "description": "Set the Cloudron Name. The Cloudron name is used in Email templates, Dashboard header and the Login pages.",
+        "tags": [
+          "Branding"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minimum": 1,
+                    "maximum": 64
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/branding/cloudron_name\" --data '{\"name\":\"My Home Cloud\"}'"
+          }
+        ]
+      }
+    },
+    "/branding/footer": {
+      "get": {
+        "operationId": "getCloudronFooter",
+        "summary": "Get Cloudron Footer",
+        "description": "Get the Cloudron Footer. The Cloudron Footer is used in the Dashboard and Login pages.",
+        "tags": [
+          "Branding"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "footer": {
+                      "$ref": "#/components/schemas/Footer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/branding/footer\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setCloudronFooter",
+        "summary": "Set Cloudron Footer",
+        "description": "Set the Cloudron Footer. The Cloudron Footer is used in the Dashboard and Login pages.",
+        "tags": [
+          "Branding"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "footer": {
+                    "$ref": "#/components/schemas/Footer"
+                  }
+                },
+                "required": [
+                  "footer"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/branding/footer\" --data '{\"footer\":\"All Rights Reserved\"}'"
+          }
+        ]
+      }
+    },
+    "/cloudron/status": {
+      "get": {
+        "operationId": "getStatus",
+        "summary": "Get Status",
+        "description": "Simple healthcheck route to check if Cloudron is running or not. This route does not require any authentication.",
+        "tags": [
+          "Cloudron"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "description": "The current Cloudron Version",
+                      "example": "7.6.0"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" \"https://$CLOUDRON_DOMAIN/api/v1/cloudron/status\""
+          }
+        ]
+      }
+    },
+    "/cloudron/avatar": {
+      "get": {
+        "operationId": "getAvatar",
+        "summary": "Get Avatar (icon)",
+        "description": "Get the Cloudron Avatar. The Cloudron avatar (icon) is used in Email templates, Dashboard header and the Login pages.\nThis route does not require any authentication.\n",
+        "tags": [
+          "Cloudron"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" \"https://$CLOUDRON_DOMAIN/api/v1/cloudron/avatar\""
+          }
+        ]
+      }
+    },
+    "/cloudron/languages": {
+      "get": {
+        "operationId": "getLanguages",
+        "summary": "Get Languages",
+        "description": "List the available languages (translations). This route does not require any authentication.",
+        "tags": [
+          "Cloudron"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "languages": {
+                      "type": "array",
+                      "description": "An array containing the Language IDs",
+                      "items": {
+                        "type": "string",
+                        "description": "Translation name"
+                      },
+                      "example": [
+                        "en",
+                        "de",
+                        "fr",
+                        "nl"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" \"https://$CLOUDRON_DOMAIN/api/v1/cloudron/languages\""
+          }
+        ]
+      }
+    },
+    "/cloudron/language": {
+      "get": {
+        "operationId": "getCloudronLanguage",
+        "summary": "Get Cloudron Language",
+        "description": "The Cloudron Language is the language used for the Dashboard, Login Page, Invitation and Reset emails. Note that users can always set a different language for their Dashboard in their profile. The default language is `en` (English).",
+        "tags": [
+          "Cloudron"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "language": {
+                      "type": "string",
+                      "description": "The Language ID",
+                      "default": "en",
+                      "example": "de"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/cloudron/language\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setCloudronLanguage",
+        "summary": "Set Cloudron Language",
+        "description": "The Cloudron Language is the language used for the Dashboard, Login Page, Invitation and Reset emails. Note that users can always set a different language for their Dashboard in their profile. The default language is `en` (English).\n",
+        "tags": [
+          "Cloudron"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "language": {
+                    "type": "string",
+                    "description": "The Language ID",
+                    "default": "en",
+                    "example": "de"
+                  }
+                },
+                "required": [
+                  "language"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/cloudron/language\" --data '{\"language\":\"de\"}'"
+          }
+        ]
+      }
+    },
+    "/cloudron/time_zone": {
+      "get": {
+        "operationId": "getCloudronTimeZone",
+        "summary": "Get Cloudron Time Zone",
+        "description": "TimeZone used for various cron jobs like backup, updates, date display in emails etc. Note that server time zone and database is always UTC.",
+        "tags": [
+          "Cloudron"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timeZone": {
+                      "type": "string",
+                      "description": "The [Time Zone Identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+                      "default": "UTC",
+                      "example": "de"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/cloudron/time_zone\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setCloudronTimeZone",
+        "summary": "Set Cloudron Time Zone",
+        "description": "TimeZone used for various cron jobs like backup, updates, date display in emails etc. Note that server time zone and database is always UTC.\n",
+        "tags": [
+          "Cloudron"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "timeZone": {
+                    "type": "string",
+                    "description": "The [Time Zone Identifier](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+                    "default": "UTC",
+                    "example": "Europe/Zurich"
+                  }
+                },
+                "required": [
+                  "language"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/cloudron/time_zone\" --data '{\"timeZone\":\"Africa/Lome\"}'"
+          }
+        ]
+      }
+    },
+    "/directory_server/config": {
+      "get": {
+        "operationId": "getDirectoryServerConfig",
+        "summary": "Get Directory Server Config",
+        "description": "Get the Directory Server configuration",
+        "tags": [
+          "Directory Server"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DirectoryServerConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/directory_server/config\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setDirectoryServerConfig",
+        "summary": "Set Directory Server Config",
+        "description": "Set the Directory Server configuration",
+        "tags": [
+          "Directory Server"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectoryServerConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/directory_server/config\" --data '{ \"enabled\": true, \"secret\": \"SecretS@uc3\", \"allowlist\": \"# Our network\\n34.3.0.0/16\" }'"
+          }
+        ]
+      }
+    },
+    "/docker/registry_config": {
+      "get": {
+        "operationId": "getDockerRegistryConfig",
+        "summary": "Get Private Container Registry Config",
+        "description": "A private docker registry can be setup to pull the docker images of custom apps.",
+        "tags": [
+          "Docker"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/docker/registry_config\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setDockerRegistryConfig",
+        "summary": "Set Private Container Registry Config",
+        "description": "A private docker registry can be setup to pull the docker images of custom apps.",
+        "tags": [
+          "Docker"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistryConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/docker/registry_config\" --data '{\"provider\":\"digitalocean\",\"serverAddress\":\"registry.digitalocean.com/cloudron\",\"username\":\"username\",\"password\":\"password\"}'"
+          }
+        ]
+      }
+    },
+    "/eventlog": {
+      "get": {
+        "operationId": "getEventlog",
+        "summary": "List Events",
+        "description": "List events",
+        "tags": [
+          "Eventlog"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaginationPage"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationPerPage"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search string",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "actions",
+            "in": "query",
+            "description": "Comma separated list of actions",
+            "explode": false,
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/action"
+              },
+              "example": "volume.add,volume.remove"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "eventlogs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Event"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/eventlog\""
+          }
+        ]
+      }
+    },
+    "/eventlog/{eventId}": {
+      "get": {
+        "operationId": "getEvent",
+        "summary": "Get Event",
+        "description": "Get event by ID",
+        "tags": [
+          "Eventlog"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/eventId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/eventlog/$EVENT_ID\""
+          }
+        ]
+      }
+    },
+    "/external_ldap/config": {
+      "get": {
+        "operationId": "getExternalLdapConfig",
+        "summary": "Get External Directory Config",
+        "description": "Cloudron will synchronize users and groups from this external LDAP or ActiveDirectory server",
+        "tags": [
+          "External LDAP"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalLdapConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/external_ldap/config\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setExternalLdapConfig",
+        "summary": "Set External LDAP Config",
+        "description": "Cloudron will synchronize users and groups from this external LDAP or ActiveDirectory server",
+        "tags": [
+          "External LDAP"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalLdapConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/docker/registry_config\" --data '{\"provider\":\"digitalocean\",\"serverAddress\":\"registry.digitalocean.com/cloudron\",\"username\":\"username\",\"password\":\"password\"}'"
+          }
+        ]
+      }
+    },
+    "/external_ldap/sync": {
+      "post": {
+        "operationId": "syncExternalLdap",
+        "summary": "Synchronize",
+        "description": "Trigger synchronization with external LDAP server",
+        "tags": [
+          "External LDAP"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/task_started"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/external_ldap/sync\""
+          }
+        ]
+      }
+    },
+    "/network/blocklist": {
+      "get": {
+        "operationId": "getBlocklist",
+        "summary": "Get Block List",
+        "description": "Gets the IP address Block List. Requests originating from these addresses are blocked by the firewall (iptables).",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "blocklist": {
+                      "$ref": "#/components/schemas/IpEntries"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/blocklist\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setBlockList",
+        "summary": "Set Block List",
+        "description": "Sets the IP address Block List. Requests originating from these addresses are blocked by the firewall (iptables).\n",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "blocklist": {
+                    "$ref": "#/components/schemas/IpEntries"
+                  }
+                },
+                "required": [
+                  "blocklist"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/blocklist\" --data '{\"blocklist\":\"# Spammy network\\n10.244.0.0/16\"}'"
+          }
+        ]
+      }
+    },
+    "/network/dynamic_dns'": {
+      "get": {
+        "operationId": "getDynamicDns",
+        "summary": "Get Dynamic DNS",
+        "description": "Gets the Dynamic DNS configuration. The Dynamic DNS option keeps all the DNS records in sync when the IP address changes dynamically (like in home networks).",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/dynamic_dns\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setDynamicDns",
+        "summary": "Set Dynamic DNS",
+        "description": "Sets the Dynamic DNS configuration. The Dynamic DNS option keeps all the DNS records in sync when the IP address changes dynamically (like in home networks).\n",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "enabled"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/dynamic_dns\" --data '{\"enabled\":true}'"
+          }
+        ]
+      }
+    },
+    "/network/ipv4_config": {
+      "get": {
+        "operationId": "getIPv4Config",
+        "summary": "Get IPv4 Config",
+        "description": "Get the IPv4 configuration settings that Cloudron uses to configure to the DNS A records.",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IPConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/ipv4_config\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setIPv4Config",
+        "summary": "Set IPv4 Config",
+        "description": "Set the IPv4 configuration settings that Cloudron uses to configure to the DNS A records.\n",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IPConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/dynamic_dns\" --data '{\"enabled\":true}'"
+          }
+        ]
+      }
+    },
+    "/network/ipv6_config": {
+      "get": {
+        "operationId": "getIPv6Config",
+        "summary": "Get IPv6 Config",
+        "description": "Get the IPv6 configuration settings that Cloudron uses to configure to the DNS AAAA records.",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IPConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/ipv6_config\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setIPv6Config",
+        "summary": "Set IPv6 Config",
+        "description": "Set the IPv6 configuration settings that Cloudron uses to configure to the DNS AAAA records.\n",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IPConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/dynamic_dns\" --data '{\"enabled\":true}'"
+          }
+        ]
+      }
+    },
+    "/network/ipv4": {
+      "get": {
+        "operationId": "getIPv4",
+        "summary": "Get IPv4 Address",
+        "description": "Gets the configured IPv4 address of the server",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ip": {
+                      "type": "string",
+                      "description": "An IPv4 address",
+                      "example": "5.75.134.144"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/ipv4\""
+          }
+        ]
+      }
+    },
+    "/network/ipv6": {
+      "get": {
+        "operationId": "getIPv6",
+        "summary": "Get IPv6 Address",
+        "description": "Gets the configured IPv6 address of the server",
+        "tags": [
+          "Network"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "ip": {
+                      "type": "string",
+                      "description": "An IPv6 address. Can be `null` when IPv6 is disabled.",
+                      "example": "2402:3a80:423:eb84:d72e:b50:7c58:83eb"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/network/ipv6\""
+          }
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "getNotifications",
+        "summary": "List Notifications",
+        "description": "List notifications",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaginationPage"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationPerPage"
+          },
+          {
+            "name": "acknowledged",
+            "in": "query",
+            "description": "Filter by acknowledged status",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/x-logs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notifications": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notification"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/notifications\""
+          }
+        ]
+      }
+    },
+    "/notifications/{notificationId}": {
+      "get": {
+        "operationId": "getNotification",
+        "summary": "Get Notification",
+        "description": "Get notification by ID",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notificationId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Notification"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/notifications/$NOTIFICATION_ID\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "updateNotification",
+        "summary": "Update Notification",
+        "description": "Set notification acknowledged state. Unacknowledged notifications count appears in the navbar of the Dashboard.\n",
+        "tags": [
+          "Notifications"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/notificationId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "acknowledged": {
+                    "type": "boolean",
+                    "example": true,
+                    "description": "Set notification to acknowledged or not"
+                  }
+                },
+                "required": [
+                  "acknowledged"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/notifications/$NOTIFICATION_ID\" --data '{\"acknowledged\":true}'"
+          }
+        ]
+      }
+    },
+    "/profile": {
+      "get": {
+        "operationId": "getProfile",
+        "summary": "Get Profile",
+        "description": "Get the authenticated user's profile",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "updateProfile",
+        "summary": "Update Profile",
+        "description": "Update user's profile information",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Profile"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile\" --data '{\"displayName\": \"Diego Maradona\"}'"
+          }
+        ]
+      }
+    },
+    "/profile/avatar": {
+      "post": {
+        "operationId": "updateAvatar",
+        "summary": "Update Avatar (icon)",
+        "description": "Update user's avatar (icon)",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "avatar"
+                ]
+              }
+            },
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "enum": [
+                      "",
+                      "gravatar"
+                    ],
+                    "example": "gravatar"
+                  }
+                },
+                "required": [
+                  "avatar"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL (gravatar)",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/avatar\" --data '{\"avatar\": \"gravatar\"}'"
+          },
+          {
+            "lang": "cURL (custom)",
+            "source": "curl -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/avatar\" --form avatar=@localfilename.png"
+          }
+        ]
+      }
+    },
+    "/profile/avatar/{userId}": {
+      "get": {
+        "operationId": "getCustomAvatar",
+        "summary": "Get Custom Avatar (icon)",
+        "description": "Get the User's custom avatar (icon). This route is public. As a simple security measure, this requires the user id.\nTo display the user's avatar , use the `avatarUrl` property of the [profile](#operation/getProfile) endpoint. The `avatarUrl` will link to this endpoint when the user has a custom icon.\n",
+        "tags": [
+          "Profile"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl \"https://$CLOUDRON_DOMAIN/api/v1/profile/avatar/$USER_ID\""
+          }
+        ]
+      }
+    },
+    "/profile/background_image": {
+      "get": {
+        "operationId": "getBackgroundImage",
+        "summary": "Get Background Image",
+        "description": "Get the user's custom background image for the dashboard.\nUse the `hasBackgroundImage` property of the [profile](#operation/getProfile) endpoint to determine if the user has a custom background image.\n",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/backgroundImage\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setBackgroundImage",
+        "summary": "Set Background Image (icon)",
+        "description": "Set the user's background image for the dashboard",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "backgroundImage": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "backgroundImage"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL (set)",
+            "source": "curl -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/background_image\" --form backgroundImage=@localfilename.png"
+          },
+          {
+            "lang": "cURL (clear)",
+            "source": "curl -X POST -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/background_image\" --form backgroundImage="
+          }
+        ]
+      }
+    },
+    "/profile/password": {
+      "post": {
+        "operationId": "updatePassword",
+        "summary": "Update Password",
+        "description": "Update user's password",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "description": "Current password",
+                    "example": "current_password"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "description": "New password",
+                    "example": "new_password"
+                  }
+                },
+                "required": [
+                  "password",
+                  "newPassword"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "412": {
+            "$ref": "#/components/responses/precondition_failed"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/password\" --data '{\"password\": \"old_password\", \"newPassword\": \"new_password\"}'"
+          }
+        ]
+      }
+    },
+    "/profile/twofactorauthentication_secret": {
+      "post": {
+        "operationId": "setTwoFactorAuthenticationSecret",
+        "summary": "Set 2FA Secret",
+        "description": "Sets 2FA Secret. Enabling 2FA is a two step process:\n  * Call this endpoint to generate a secret. The response contains the secret and a qrcode\n  * Call the [Enable 2FA](#operation/enableTwoFactorAuthentication) endpoint with a TOTP Token (generated off the above secret)\n",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "secret": {
+                      "type": "string"
+                    },
+                    "qrcode": {
+                      "type": "string",
+                      "description": "This is a `image/png` in `base64` format"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/twofactorauthentication_secret\""
+          }
+        ]
+      }
+    },
+    "/profile/twofactorauthentication_enable": {
+      "post": {
+        "operationId": "enableTwoFactorAuthentication",
+        "summary": "Enable 2FA",
+        "description": "Enables Two Factor Authentication. Enabling 2FA is a two step process:\n  * Call the [Set 2FA Secret](#operation/setTwoFactorAuthenticationSecret) endpoint to generate a secret. The response contains the secret and a qrcode\n  * Call this endpoint with a TOTP Token (generated off the above secret) to enable 2FA\n",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "totpToken": {
+                    "type": "string",
+                    "description": "Current TOTP Token based off the [generate secret](#operation/setTwoFactorAuthenticationSecret)"
+                  }
+                },
+                "required": [
+                  "totpToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "412": {
+            "$ref": "#/components/responses/precondition_failed"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/twofactorauthentication_enable\" --data '{\"totpToken\": \"576428\"}'"
+          }
+        ]
+      }
+    },
+    "/profile/twofactorauthentication_disable": {
+      "post": {
+        "operationId": "disableTwoFactorAuthentication",
+        "summary": "Disable 2FA",
+        "description": "Disable 2FA",
+        "tags": [
+          "Profile"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "description": "Current password",
+                    "example": "current_password"
+                  }
+                },
+                "required": [
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "412": {
+            "$ref": "#/components/responses/precondition_failed"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/profile/twofactorauthentication_disable\" --data '{\"password\": \"current_password\"}'"
+          }
+        ]
+      }
+    },
+    "/reverseproxy/renew_certs": {
+      "post": {
+        "operationId": "renewCerts",
+        "summary": "Renew Certs",
+        "description": "Trigger manual renewal of Let's encrypt certificates. Note that certs are automatically renewed by Cloudron, 1 month before their expiry.",
+        "tags": [
+          "Reverse Proxy"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "rebuild": {
+                    "type": "boolean",
+                    "description": "When set all the nginx configurations are regenerated.",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/task_started"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/reverseproxy/renew_certs\""
+          }
+        ]
+      }
+    },
+    "/reverseproxy/trusted_ips": {
+      "get": {
+        "operationId": "getTrustedIps",
+        "summary": "Get Trusted IPs",
+        "description": "Gets the list of proxies in front of Cloudron. Cloudron will trust the various reverse proxy headers like `X-Forwarded-For` when requests originate from these proxy addresses.\n",
+        "tags": [
+          "Reverse Proxy"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "trustedIps": {
+                      "$ref": "#/components/schemas/IpEntries"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/reverseproxy/trusted_ips\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setTrustedIps",
+        "summary": "Set Trusted IPs",
+        "description": "Sets the list of proxies in front of Cloudron. Cloudron will trust the various reverse proxy headers like `X-Forwarded-For` when requests originate from these proxy addresses.\n",
+        "tags": [
+          "Reverse Proxy"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "trustedIps": {
+                    "$ref": "#/components/schemas/IpEntries"
+                  }
+                },
+                "required": [
+                  "trustedIps"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/reverseproxy/trusted_ips\" --data '{\"trustedIps\":\"# My IPv4 Proxy\\n10.244.0.0/16\"}'"
+          }
+        ]
+      }
+    },
+    "/system/reboot": {
+      "get": {
+        "operationId": "isRebootRequired",
+        "summary": "Is Reboot Required",
+        "description": "Checks whether a server reboot is required. Automatic Ubuntu updates often requires a reboot to apply changes to system libraries.\n",
+        "tags": [
+          "System"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rebootRequired": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/system/reboot\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "rebootServer",
+        "summary": "Reboot",
+        "description": "Reboots the server immediately.",
+        "tags": [
+          "System"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/system/reboot\""
+          }
+        ]
+      }
+    },
+    "/tasks": {
+      "get": {
+        "operationId": "getTasks",
+        "summary": "List Tasks",
+        "description": "List tasks",
+        "tags": [
+          "Tasks"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaginationPage"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationPerPage"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by Task Type",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tasks": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Task"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tasks\""
+          }
+        ]
+      }
+    },
+    "/tasks/{taskId}": {
+      "get": {
+        "operationId": "getTask",
+        "summary": "Get Task",
+        "description": "Get task by ID",
+        "tags": [
+          "Tasks"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/taskId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Task"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tasks/$TASKS_ID\""
+          }
+        ]
+      }
+    },
+    "/tasks/{taskId}/logs": {
+      "get": {
+        "operationId": "getTaskLogs",
+        "summary": "Get Task Logs",
+        "description": "Get task logs. Use this end point to download logs. If you want to follow logs `tail -f` style, use the [logstream](#operation/getTaskLogstream) endpoint instead.",
+        "tags": [
+          "Tasks"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/taskId"
+          },
+          {
+            "$ref": "#/components/parameters/logsLines"
+          },
+          {
+            "$ref": "#/components/parameters/logsFormat"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/x-logs": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary",
+                  "description": "Each line in the returned logs is of the desired format. When the format is `json`, each line is a [NDJSON](https://en.wikipedia.org/wiki/JSON_streaming#Newline-Delimited_JSON) containing the fields `realtimeTimestamp` and `message`. The `Content-Disposition` header is set to `attachment; filename=\"task-43.log\"`.\n"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "424": {
+            "$ref": "#/components/responses/failed_dependency"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tasks/$TASKS_ID/logs?lines=100\""
+          }
+        ]
+      }
+    },
+    "/tasks/{taskId}/logstream": {
+      "get": {
+        "operationId": "getTaskLogstream",
+        "summary": "Get Task Logs Stream",
+        "description": "Get task logs. Use this endpoint to stream logs (`tail -f` style). If you want to download logs, use the [logs](#operation/getTaskLogs) endpoint instead. This endpoint implements [Server Side Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events). Use the [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) interface to parse the returned stream.\n",
+        "tags": [
+          "Tasks"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/taskId"
+          },
+          {
+            "$ref": "#/components/parameters/logsLines"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogStreamSSE"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Accept: text/event-stream\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tasks/$TASKS_ID/logstream?lines=100\""
+          }
+        ]
+      }
+    },
+    "/tasks/{taskId}/stop": {
+      "post": {
+        "operationId": "stopTask",
+        "summary": "Stop Task",
+        "description": "Stops a task",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/taskId"
+          }
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "409": {
+            "$ref": "#/components/responses/conflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tasks/$TASK_ID/stop\""
+          }
+        ]
+      }
+    },
+    "/tokens": {
+      "get": {
+        "operationId": "getTokens",
+        "summary": "List Tokens",
+        "description": "List the API tokens created by the user. Note that tokens are personal (per user) and not global.",
+        "tags": [
+          "Tokens"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PaginationPage"
+          },
+          {
+            "$ref": "#/components/parameters/PaginationPerPage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tokens": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tokens\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createToken",
+        "summary": "Create Token",
+        "description": "Create an API token",
+        "tags": [
+          "Tokens"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "$ref": "#/components/schemas/properties-name"
+                  },
+                  "expiresAt": {
+                    "$ref": "#/components/schemas/expires"
+                  },
+                  "scope": {
+                    "$ref": "#/components/schemas/scope"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tokens\" --data '{\"name\":\"Token For Automation\"}'"
+          }
+        ]
+      }
+    },
+    "/tokens/{tokenId}": {
+      "get": {
+        "operationId": "getToken",
+        "summary": "Get Token",
+        "description": "Get token by ID",
+        "tags": [
+          "Tokens"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tokenId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tokens/$TOKEN_ID\""
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "deleteToken",
+        "summary": "Delete Token",
+        "description": "Deletes the Token. All future requests using this token will instantly fail.",
+        "tags": [
+          "Tokens"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/tokenId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/not_found"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X DELETE -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/tokens/$TOKEN_ID\""
+          }
+        ]
+      }
+    },
+    "/updater/updates": {
+      "get": {
+        "operationId": "getUpdates",
+        "summary": "Get Pending Updates",
+        "description": "Gets information of any pending update to apps and the platform. This endpoint returns the cached update information and does not contact cloudron.io App Store. The update information could be stale and if you want the latest information use the [checkForUpdates](#operation/checkForUpdates) endpoint.\n",
+        "tags": [
+          "Updater"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updates": {
+                      "$ref": "#/components/schemas/UpdateInfo"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/updater/updates\""
+          }
+        ]
+      }
+    },
+    "/updater/check_for_updates": {
+      "post": {
+        "operationId": "checkForUpdates",
+        "summary": "Check for updates",
+        "description": "Gets information of any pending update to apps and the platform by contacting cloudron.io App Store. This call can take a while since it has to get the update information of each installed app. Use the [getUpdates](#operation/getUpdates) endpoint to get the update information since the last check.\n",
+        "tags": [
+          "Updater"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updates": {
+                      "$ref": "#/components/schemas/UpdateInfo"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/updater/check_for_updates\""
+          }
+        ]
+      }
+    },
+    "/updater/update": {
+      "post": {
+        "operationId": "updateCloudron",
+        "summary": "Update Cloudron",
+        "description": "Updates Cloudron to the next available release. The update is started asynchronously and can be monitored using the [tasks API](#tag/Tasks).\n",
+        "tags": [
+          "Updater"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skipBackup": {
+                    "type": "boolean",
+                    "description": "Whether backup should be skipped before performing the update.",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/task_started"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/unprocessable_entity"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/updater/update\""
+          }
+        ]
+      }
+    },
+    "/updater/autoupdate_pattern": {
+      "get": {
+        "operationId": "getAutoupdatePattern",
+        "summary": "Get Update Schedule",
+        "description": "Get the automatic update schedule",
+        "tags": [
+          "Updater"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pattern": {
+                      "$ref": "#/components/schemas/CronPattern"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/updater/autoupdate_pattern\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setAutoupdatePattern",
+        "summary": "Set Update Schedule",
+        "description": "Sets the automatic update schedule",
+        "tags": [
+          "Updater"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pattern": {
+                    "$ref": "#/components/schemas/CronPattern"
+                  }
+                },
+                "required": [
+                  "pattern"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/updater/autoupdate_pattern\" --data '{\"pattern\":\"00 00 1,5 * * *\"}'"
+          }
+        ]
+      }
+    },
+    "/api/v1/user_directory": {
+      "get": {
+        "operationId": "getUserDirectoryProfileConfig",
+        "summary": "Get profile config",
+        "description": "Get the current profile configuration for all users in the user directory.",
+        "tags": [
+          "User Directory"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "read"
+            ]
+          },
+          {
+            "query_auth": [
+              "read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileConfig"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/user_directory/profile_config\""
+          }
+        ]
+      },
+      "post": {
+        "operationId": "setUserDirectoryProfileConfig",
+        "summary": "Set profile config",
+        "description": "Set the current profile configuration for all users in the user directory.",
+        "tags": [
+          "User Directory"
+        ],
+        "security": [
+          {
+            "bearer_auth": [
+              "write"
+            ]
+          },
+          {
+            "query_auth": [
+              "write"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/no_content"
+          },
+          "400": {
+            "$ref": "#/components/responses/bad_field"
+          },
+          "401": {
+            "$ref": "#/components/responses/unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/forbidden"
+          },
+          "500": {
+            "$ref": "#/components/responses/server_error"
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "cURL",
+            "source": "curl -X POST -H \"Content-Type: application/json\" -H \"Authorization: Bearer $CLOUDRON_TOKEN\" \"https://$CLOUDRON_DOMAIN/api/v1/user_directory/profile_config\" --data '{ \"lockUserProfiles\": false, \"mandatory2FA\": false }'"
+          }
+        ]
+      }
+    }
+  }
+}

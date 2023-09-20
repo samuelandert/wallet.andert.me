@@ -1,0 +1,11 @@
+query {
+  system_db_users_me {
+    id
+    first_name
+    last_name
+    avatar {
+      id
+    }
+    external_identifier
+  }
+}

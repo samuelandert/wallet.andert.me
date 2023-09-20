@@ -9,6 +9,8 @@
         <li><a href="/me/banking">Banking</a></li>
         <li><a href="/me/bookmarks">Bookmarks</a></li>
         <li><a href="/me/acc">Access Control</a></li>
+        <li><a href="/me/apps">Apps</a></li>
+        <li><a href="/me/resttest">REST</a></li>
       </ul>
     </nav>
   </aside>

@@ -1,0 +1,5 @@
+query {
+  cloudron_getProfile {
+    email
+  }
+}
