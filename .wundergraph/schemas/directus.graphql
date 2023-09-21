@@ -2,41 +2,40 @@ type Query {
   projects(filter: projects_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [projects!]!
   projects_by_id(id: ID!): projects
   projects_aggregated(groupBy: [String], filter: projects_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [projects_aggregated!]!
-  todos(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [todos!]!
-  todos_by_id(id: ID!): todos
-  todos_aggregated(groupBy: [String], filter: todos_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [todos_aggregated!]!
   bookmarks(filter: bookmarks_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [bookmarks!]!
   bookmarks_by_id(id: ID!): bookmarks
   bookmarks_aggregated(groupBy: [String], filter: bookmarks_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [bookmarks_aggregated!]!
+  todos(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [todos!]!
+  todos_by_id(id: ID!): todos
+  todos_aggregated(groupBy: [String], filter: todos_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [todos_aggregated!]!
 }
 
 type Mutation {
   create_projects_items(filter: projects_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_projects_input!]): [projects!]!
   create_projects_item(data: create_projects_input!): projects
-  create_todos_items(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_todos_input!]): [todos!]!
-  create_todos_item(data: create_todos_input!): todos
   create_bookmarks_items(filter: bookmarks_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_bookmarks_input!]): [bookmarks!]!
   create_bookmarks_item(data: create_bookmarks_input!): bookmarks
+  create_todos_items(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_todos_input!]): [todos!]!
+  create_todos_item(data: create_todos_input!): todos
   update_projects_items(filter: projects_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_projects_input!): [projects!]!
   update_projects_batch(filter: projects_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_projects_input!]): [projects!]!
   update_projects_item(id: ID!, data: update_projects_input!): projects
-  update_todos_items(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_todos_input!): [todos!]!
-  update_todos_batch(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_todos_input!]): [todos!]!
-  update_todos_item(id: ID!, data: update_todos_input!): todos
   update_bookmarks_items(filter: bookmarks_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_bookmarks_input!): [bookmarks!]!
   update_bookmarks_batch(filter: bookmarks_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_bookmarks_input!]): [bookmarks!]!
   update_bookmarks_item(id: ID!, data: update_bookmarks_input!): bookmarks
+  update_todos_items(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_todos_input!): [todos!]!
+  update_todos_batch(filter: todos_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_todos_input!]): [todos!]!
+  update_todos_item(id: ID!, data: update_todos_input!): todos
   delete_projects_items(ids: [ID]!): delete_many
   delete_projects_item(id: ID!): delete_one
-  delete_todos_items(ids: [ID]!): delete_many
-  delete_todos_item(id: ID!): delete_one
   delete_bookmarks_items(ids: [ID]!): delete_many
   delete_bookmarks_item(id: ID!): delete_one
+  delete_todos_items(ids: [ID]!): delete_many
+  delete_todos_item(id: ID!): delete_one
 }
 
 type Subscription {
   projects_mutated(event: EventEnum): projects_mutated
-  todos_mutated(event: EventEnum): todos_mutated
   directus_dashboards_mutated(event: EventEnum): directus_dashboards_mutated
   directus_activity_mutated(event: EventEnum): directus_activity_mutated
   directus_notifications_mutated(event: EventEnum): directus_notifications_mutated
@@ -55,6 +54,7 @@ type Subscription {
   directus_shares_mutated(event: EventEnum): directus_shares_mutated
   directus_webhooks_mutated(event: EventEnum): directus_webhooks_mutated
   bookmarks_mutated(event: EventEnum): bookmarks_mutated
+  todos_mutated(event: EventEnum): todos_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""
@@ -620,15 +620,16 @@ type projects_mutated {
 
 type todos {
   id: ID!
-  status: String
-  sort: Int
   user_created(filter: directus_users_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_users
   date_created: Date
   date_created_func: datetime_functions
   user_updated(filter: directus_users_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_users
   date_updated: Date
   date_updated_func: datetime_functions
+  enddate: Date
+  enddate_func: datetime_functions
   task: String
+  type: String
 }
 
 type todos_aggregated {
@@ -636,27 +637,17 @@ type todos_aggregated {
   countAll: Int
   count: todos_aggregated_count
   countDistinct: todos_aggregated_count
-  avg: todos_aggregated_fields
-  sum: todos_aggregated_fields
-  avgDistinct: todos_aggregated_fields
-  sumDistinct: todos_aggregated_fields
-  min: todos_aggregated_fields
-  max: todos_aggregated_fields
 }
 
 type todos_aggregated_count {
   id: Int
-  status: Int
-  sort: Int
   user_created: Int
   date_created: Int
   user_updated: Int
   date_updated: Int
+  enddate: Int
   task: Int
-}
-
-type todos_aggregated_fields {
-  sort: Float
+  type: Int
 }
 
 type todos_mutated {
@@ -786,13 +777,13 @@ input create_projects_input {
 
 input create_todos_input {
   id: ID
-  status: String
-  sort: Int
   user_created: create_directus_users_input
   date_created: Date
   user_updated: create_directus_users_input
   date_updated: Date
+  enddate: Date
   task: String
+  type: String
 }
 
 input date_filter_operators {
@@ -1073,15 +1064,16 @@ input string_filter_operators {
 
 input todos_filter {
   id: string_filter_operators
-  status: string_filter_operators
-  sort: number_filter_operators
   user_created: directus_users_filter
   date_created: date_filter_operators
   date_created_func: datetime_function_filter_operators
   user_updated: directus_users_filter
   date_updated: date_filter_operators
   date_updated_func: datetime_function_filter_operators
+  enddate: date_filter_operators
+  enddate_func: datetime_function_filter_operators
   task: string_filter_operators
+  type: string_filter_operators
   _and: [todos_filter]
   _or: [todos_filter]
 }
@@ -1178,11 +1170,11 @@ input update_projects_input {
 
 input update_todos_input {
   id: ID
-  status: String
-  sort: Int
   user_created: update_directus_users_input
   date_created: Date
   user_updated: update_directus_users_input
   date_updated: Date
+  enddate: Date
   task: String
+  type: String
 }

@@ -55,22 +55,31 @@
     <!-- (fallback contents) -->
   {/if}</Drawer
 >
-
-<div class="grid h-screen grid-rows-layout bg-color">
-  <QueryClientProvider client={data.queryClient}>
+<div class="grid h-screen grid-layout bg-color">
+  <QueryClientProvider client={data.queryClient} class="main">
     <slot />
   </QueryClientProvider>
 
-  <div class="row-start-2 row-end-3">
+  <footer>
     <Wallet />
-  </div>
+  </footer>
 </div>
 
 <style>
   .bg-color {
     background-color: #e6e7e1;
   }
-  .grid-rows-layout {
+  .grid-layout {
+    grid-template-areas:
+      "main "
+      "footer ";
     grid-template-rows: 1fr auto;
+  }
+  .main {
+    grid-area: main;
+  }
+
+  footer {
+    grid-area: footer;
   }
 </style>

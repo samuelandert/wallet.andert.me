@@ -46,6 +46,9 @@
               <h2 class="text-lg font-semibold">
                 {document.archived_file_name}
               </h2>
+              <p>Correspondent: {document.correspondent.name}</p>
+              <p>Tags: {document.tags.map((tag) => tag.name).join(", ")}</p>
+              <p>{document.document_type.name}</p>
             </div>
           </a>
         {/each}

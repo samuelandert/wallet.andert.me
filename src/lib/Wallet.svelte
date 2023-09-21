@@ -96,19 +96,6 @@
           </aside>
           <div class="col-span-5 w-full">
             <div class="flex justify-end space-x-4">
-              <div class="w-full">
-                <input bind:value={search} class="input" type="text" />
-              </div>
-              <button type="button" class="btn-icon variant-filled-success">
-                <div class="px-4">
-                  <Icon
-                    icon="carbon:send-alt-filled"
-                    class=""
-                    width="24"
-                    height="24"
-                  />
-                </div>
-              </button>
               <button
                 on:click={signRequestTrigger}
                 type="button"

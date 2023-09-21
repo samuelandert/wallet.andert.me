@@ -199,7 +199,6 @@ type Mutation {
 
 type Subscription {
   projects_mutated(event: EventEnum): projects_mutated
-  todos_mutated(event: EventEnum): todos_mutated
   directus_dashboards_mutated(event: EventEnum): directus_dashboards_mutated
   directus_activity_mutated(event: EventEnum): directus_activity_mutated
   directus_notifications_mutated(event: EventEnum): directus_notifications_mutated
@@ -218,6 +217,7 @@ type Subscription {
   directus_shares_mutated(event: EventEnum): directus_shares_mutated
   directus_webhooks_mutated(event: EventEnum): directus_webhooks_mutated
   bookmarks_mutated(event: EventEnum): bookmarks_mutated
+  todos_mutated(event: EventEnum): todos_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""
@@ -1392,15 +1392,16 @@ type server_info_websocket_rest {
 
 type todos {
   id: ID!
-  status: String
-  sort: Int
   user_created(filter: directus_users_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_users
   date_created: Date
   date_created_func: datetime_functions
   user_updated(filter: directus_users_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_users
   date_updated: Date
   date_updated_func: datetime_functions
+  enddate: Date
+  enddate_func: datetime_functions
   task: String
+  type: String
 }
 
 type todos_mutated {
