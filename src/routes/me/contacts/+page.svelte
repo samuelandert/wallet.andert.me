@@ -5,7 +5,6 @@
 
   const contactsQuery = createQuery({
     operationName: "getChatwootContacts",
-    variables: { page: 2 },
   });
 </script>
 

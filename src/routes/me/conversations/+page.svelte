@@ -8,12 +8,21 @@
   });
 
   let selectedConversation = null;
+  let messagesQuery;
+
   function selectConversation(conversation) {
     selectedConversation = conversation;
   }
 
   $: if ($conversationsQuery.data && !selectedConversation) {
     selectedConversation = $conversationsQuery.data.data.payload[0];
+  }
+
+  $: if (selectedConversation) {
+    messagesQuery = createQuery({
+      operationName: "getChatwootMessages",
+      input: { conversationId: selectedConversation.id },
+    });
   }
 </script>
 
@@ -49,24 +58,21 @@
       </div>
 
       <div class="space-y-4 px-4">
-        {#each selectedConversation.messages as message (message.id)}
-          {#if message.content_type == "incoming_email"}
-            {#if selectedConversation.last_non_activity_message.content != message.content}
+        {#if $messagesQuery && $messagesQuery.data}
+          {#each $messagesQuery.data.payload as message (message.id)}
+            {#if message.content_attributes.email && (message.content_attributes.email.content_type.includes("text/html") || message.content_attributes.email.content_type.includes("multipart/alternative"))}
               <MailViewer
-                html={selectedConversation.last_non_activity_message
-                  .content_attributes.email.html_content.full}
-              />{/if}
-            <MailViewer
-              html={message.content_attributes.email.html_content.full}
-            />
-          {:else}
-            {#if selectedConversation.last_non_activity_message.content != message.content}{selectedConversation
-                .last_non_activity_message.content}{/if}
-            <p class="bg-slate-400 py-1 px-2 rounded-sm my-2">
-              {message.content}
-            </p>
-          {/if}
-        {/each}
+                html={message.content_attributes.email.html_content.full}
+              />
+            {:else}
+              <div
+                class="p-4 max-w-xs mx-auto bg-blue-100 rounded-xl shadow-md flex items-center space-x-4"
+              >
+                <p class="text-black">{message.content}</p>
+              </div>
+            {/if}
+          {/each}
+        {/if}
       </div>
     {:else}
       <p>Select a conversation to view its details.</p>
