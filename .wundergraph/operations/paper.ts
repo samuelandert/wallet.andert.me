@@ -1,4 +1,4 @@
-// .wundergraph/operations/getPaperless.ts
+// .wundergraph/operations/paper.ts
 import { createOperation, z } from '../generated/wundergraph.factory';
 import axios from 'axios';
 
@@ -12,17 +12,8 @@ export default createOperation.query({
             },
         });
 
-        // Add download link, thumbnail link, preview link, PDF data, and metadata to each document
-        const documentsWithLinksDataAndMetadata = await Promise.all(data.results.map(async doc => {
-            const response = await axios.get(`https://paperless.andert.me/api/documents/${doc.id}/preview/`, {
-                responseType: 'arraybuffer',
-                headers: {
-                    Authorization: process.env.PAPERLESS_TOKEN,
-                },
-            });
-
-            const pdfData = Buffer.from(response.data, 'binary').toString('base64');
-
+        // Fetch additional metadata for each document
+        const documents = await Promise.all(data.results.map(async doc => {
             let correspondent = null;
             if (doc.correspondent) {
                 const correspondentResponse = await axios.get(`https://paperless.andert.me/api/correspondents/${doc.correspondent}/`, {
@@ -55,16 +46,12 @@ export default createOperation.query({
 
             return {
                 ...doc,
-                downloadLink: `https://paperless.andert.me/api/documents/${doc.id}/download/`,
-                thumbnailLink: `https://paperless.andert.me/api/documents/${doc.id}/thumb/`,
-                previewLink: `https://paperless.andert.me/api/documents/${doc.id}/preview/`,
-                pdfData,
                 correspondent,
                 tags,
                 documentType,
             };
         }));
 
-        return documentsWithLinksDataAndMetadata;
+        return documents;
     },
 });

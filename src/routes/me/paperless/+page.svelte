@@ -27,10 +27,6 @@
 </script>
 
 <HeaderMain>
-  <!-- <div slot="header">
-    <h1>Paperless Documents</h1>
-  </div> -->
-
   <div slot="main" class="h-full w-full overflow-scroll flex">
     <div class="w-1/4 h-full overflow-scroll">
       {#if $paperlessQuery.isLoading}
@@ -46,9 +42,12 @@
               <h2 class="text-lg font-semibold">
                 {document.archived_file_name}
               </h2>
-              <p>Correspondent: {document.correspondent.name}</p>
-              <p>Tags: {document.tags.map((tag) => tag.name).join(", ")}</p>
-              <p>{document.document_type.name}</p>
+              <p>Correspondent: {document.correspondent?.name || "N/A"}</p>
+              <p>
+                Tags: {document.tags?.map((tag) => tag.name).join(", ") ||
+                  "N/A"}
+              </p>
+              <p>{document.documentType?.name || "N/A"}</p>
             </div>
           </a>
         {/each}

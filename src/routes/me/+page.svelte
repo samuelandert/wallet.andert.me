@@ -1,7 +1,8 @@
 <script lang="ts">
   import HeaderMain from "$lib/layouts/HeaderMain.svelte";
-  import { createQuery } from "../../lib/wundergraph";
   import { Avatar } from "@skeletonlabs/skeleton";
+
+  import { createQuery } from "../../lib/wundergraph";
 
   const meQuery = createQuery({
     operationName: "Me",
